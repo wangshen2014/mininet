@@ -359,7 +359,54 @@ class RemoteLink( Link ):
         kwargs.setdefault( 'params1', {} )
         kwargs.setdefault( 'params2', {} )
         self.cmd = None  # satisfy pylint
-        Link.__init__( self, node1, node2, **kwargs )
+        port1 = port2 = intfName1 = intfName2 = cls1 = cls2 = fast = None
+        intf = Intf
+
+        # Dynamically create variable from kwargs
+        for key, value in kwargs.iteritems():
+            if isinstance(value, basestring):
+                exec("{0}='{1}'".format(key, value))
+            else:
+                exec("{0}={1}".format(key, value))
+
+        self.tunneling = tunneling
+
+        if params2 is params1:
+            params2 = dict( params1 )
+        if port1 is not None:
+            params1[ 'port' ] = port1
+        if port2 is not None:
+            params2[ 'port' ] = port2
+        if 'port' not in params1:
+            params1[ 'port' ] = node1.newPort()
+        if 'port' not in params2:
+            params2[ 'port' ] = node2.newPort()
+        if not intfName1:
+            intfName1 = self.intfName( node1, params1[ 'port' ] )
+        if not intfName2:
+            intfName2 = self.intfName( node2, params2[ 'port' ] )
+
+        self.fast = fast
+        if fast:
+            params1.setdefault( 'moveIntfFn', self._ignore )
+            params2.setdefault( 'moveIntfFn', self._ignore )
+            self.makeIntfPair( intfName1, intfName2, addr1, addr2,
+                               node1, node2, deleteIntfs=False )
+        else:
+            self.makeIntfPair( intfName1, intfName2, addr1, addr2 )
+
+        if not cls1:
+            cls1 = intf
+        if not cls2:
+            cls2 = intf
+
+        intf1 = cls1( name=intfName1, node=node1,
+                      link=self, mac=addr1, **params1  )
+        intf2 = cls2( name=intfName2, node=node2,
+                      link=self, mac=addr2, **params2 )
+
+        self.intf1, self.intf2 = intf1, intf2
+
 
     def stop( self ):
         "Stop this link"
@@ -681,6 +728,7 @@ class MininetCluster( Mininet ):
         # Make sure control directory exists
         self.cdir = os.environ[ 'HOME' ] + '/.ssh/mn'
         errRun( [ 'mkdir', '-p', self.cdir ] )
+        self.tunneling = params.pop( 'tunneling', 'ssh' )  # Get tunnel mechanism, default 'ssh'
         Mininet.__init__( self, *args, **params )
 
     def popen( self, cmd ):
@@ -773,6 +821,34 @@ class MininetCluster( Mininet ):
         self.placeNodes()
         info( '\n' )
         Mininet.buildFromTopo( self, *args, **kwargs )
+
+    def addLink( self, node1, node2, port1=None, port2=None,
+                 cls=None, **params ):
+        """"Add a link from node1 to node2
+            node1: source node (or name)
+            node2: dest node (or name)
+            port1: source port (optional)
+            port2: dest port (optional)
+            cls: link class (optional)
+            params: additional link params (optional)
+            returns: link object"""
+        # Accept node objects or names
+        node1 = node1 if not isinstance( node1, basestring ) else self[ node1 ]
+        node2 = node2 if not isinstance( node2, basestring ) else self[ node2 ]
+        options = dict( params )
+        # Port is optional
+        if port1 is not None:
+            options.setdefault( 'port1', port1 )
+        if port2 is not None:
+            options.setdefault( 'port2', port2 )
+        # Set default MAC - this should probably be in Link
+        options.setdefault( 'addr1', self.randMac() )
+        options.setdefault( 'addr2', self.randMac() )
+        options.setdefault( 'tunneling', self.tunneling ) # Set RemoteLink about tunnel mechanism
+        cls = self.link if cls is None else cls
+        link = cls( node1, node2, **options )
+        self.links.append( link )
+        return link
 
 
 def testNsTunnels():
