@@ -11,4 +11,8 @@ dist
 doc/html
 doc/latex
 trunk
+examples/ns3/
+examples/opennet/
+mininet/ns3.py
+mininet/opennet.py
 

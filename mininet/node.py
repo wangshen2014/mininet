@@ -423,8 +423,11 @@ class Node( object ):
         debug( 'added intf %s (%d) to node %s\n' % (
                 intf, port, self.name ) )
         if self.inNamespace:
-            debug( 'moving', intf, 'into namespace for', self.name, '\n' )
-            moveIntfFn( intf.name, self  )
+            if hasattr( intf, 'delayedMove' ) and intf.delayedMove is True:
+                pass
+            else:
+                debug( 'moving', intf, 'into namespace for', self.name, '\n' )
+                moveIntfFn( intf.name, self  )
 
     def defaultIntf( self ):
         "Return interface for lowest port"
@@ -1521,3 +1524,9 @@ def DefaultController( name, controllers=DefaultControllers, **kwargs ):
 def NullController( *_args, **_kwargs ):
     "Nonexistent controller - simply returns None"
     return None
+
+class AP ( OVSSwitch ):
+    pass
+
+class Station ( Host ):
+    pass
