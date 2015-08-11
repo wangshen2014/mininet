@@ -107,6 +107,7 @@ class MininetCluster( Mininet ):
     # BatchMode yes: don't ask for password
     # ForwardAgent yes: forward authentication credentials
     sshcmd = [ 'ssh', '-o', 'BatchMode=yes', '-o', 'ForwardAgent=yes' ]
+    TunnelSupport = [ 'ssh', 'vxlan', 'gre' ]
 
     def __init__( self, *args, **kwargs ):
         """servers: a list of servers to use (note: include
@@ -254,6 +255,43 @@ class MininetCluster( Mininet ):
         link = cls( node1, node2, **options )
         self.links.append( link )
         return link
+
+    def start( self ):
+        "Start controller and switches."
+        if not self.built:
+            self.build()
+        info( '*** Starting controller\n' )
+        for controller in self.controllers:
+            info( controller.name + ' ')
+            controller.start()
+        info( '\n' )
+        info( '*** Starting %s switches\n' % len( self.switches ) )
+        for switch in self.switches:
+            info( switch.name + ' ')
+            switch.start( self.controllers )
+        started = {}
+        for swclass, switches in groupby(
+                sorted( self.switches, key=type ), type ):
+            switches = tuple( switches )
+            if hasattr( swclass, 'batchStartup' ):
+                success = swclass.batchStartup( switches )
+                started.update( { s: s for s in success } )
+
+        # Tunneling mechanism handle
+        info('\n')
+        info( '*** Tunneling Mechanism: %s\n' % self.tunneling )
+        if self.tunneling in self.TunnelSupport:
+            if not self.tunneling is "ssh":
+                # Find tunnel status
+                for remotelink in self.links:
+                    if remotelink.tunnel:
+                        # Tunnel exsists
+                        remotelink.makeOVSTunnel(self.tunneling)
+        else:
+            info('Only implements {0}'.format(self.TunnelSupport))
+
+        if self.waitConn:
+            self.waitConnected()
 
 
 def testNsTunnels():

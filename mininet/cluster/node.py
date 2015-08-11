@@ -45,7 +45,7 @@ class RemoteMixin( object ):
            splitInit: split initialization?
            **kwargs: see Node()"""
         # We connect to servers by IP address
-        self.server = server if server else 'localhost'
+        self.server = ( server if server else self.findServer( self.server ) )
         self.serverIP = ( serverIP if serverIP
                           else self.findServerIP( self.server ) )
         self.user = user if user else findUser()
@@ -86,7 +86,15 @@ class RemoteMixin( object ):
         output = quietRun( 'getent ahostsv4 %s' % server )
         ips = cls._ipMatchRegex.findall( output )
         ip = ips[ 0 ] if ips else None
+        if ip == "127.0.0.1":
+            ip = quietRun('hostname -i')
         return ip
+
+    @classmethod
+    def findServer( cls, server ):
+        "Return our server's name"
+        servername = quietRun('hostname')
+        return servername
 
     # Command support via shell process in namespace
     def startShell( self, *args, **kwargs ):
