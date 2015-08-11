@@ -3,7 +3,7 @@
 from mininet.link import Link, Intf
 from mininet.log import setLogLevel, debug, info, error
 from mininet.util import quietRun, errRun
-
+import pdb
 
 class RemoteLink( Link ):
     "A RemoteLink is a link between nodes which may be on different servers"
@@ -178,3 +178,23 @@ class RemoteLink( Link ):
             status = "OK"
         result = "%s %s" % ( Link.status( self ), status )
         return result
+
+    def makeOVSTunnel( self, tunneling=None ):
+        "Make OVS tunnel"
+        if tunneling is None:
+            tunneling = self.tunneling
+        # 1. Delete interface abount original tunnel
+        # Delete interface from openvswitch
+        self.node1.vsctl("del-port {intfname}".format(intfname=self.intf1.name))
+        self.node2.vsctl("del-port {intfname}".format(intfname=self.intf2.name))
+
+        # Delete interface from namespace
+        self.intf1.delete()
+        self.intf2.delete()
+
+        # 2. Build OVS Tunnel
+        self.node1.vsctl("add-port s1 {intfname} -- set interface {intfname} type={tunneling} options:remote_ip={serverip}".format(intfname=self.intf1.name, tunneling=tunneling, serverip=self.node2.serverIP))
+        self.node2.vsctl("add-port s2 {intfname} -- set interface {intfname} type={tunneling} options:remote_ip={serverip}".format(intfname=self.intf2.name, tunneling=tunneling, serverip=self.node1.serverIP))
+
+        return True
+
