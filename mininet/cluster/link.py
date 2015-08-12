@@ -3,7 +3,6 @@
 from mininet.link import Link, Intf
 from mininet.log import setLogLevel, debug, info, error
 from mininet.util import quietRun, errRun
-import pdb
 
 class RemoteLink( Link ):
     "A RemoteLink is a link between nodes which may be on different servers"

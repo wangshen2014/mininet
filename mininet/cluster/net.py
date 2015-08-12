@@ -90,9 +90,9 @@ from mininet.util import quietRun, errRun
 from mininet.link import Link, Intf
 from mininet.cluster.node import RemoteHost, RemoteOVSSwitch, RemoteMixin
 from mininet.cluster.link import RemoteLink
-from mininet.cluster.cleanup import *
+from mininet.cluster.clean import *
 from mininet.cluster.placer import SwitchBinPlacer
-from mininet.examples.clustercli import CLI
+from mininet.cluster.cli import CLI
 
 import os
 import sys
