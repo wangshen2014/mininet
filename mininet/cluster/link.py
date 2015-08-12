@@ -192,8 +192,8 @@ class RemoteLink( Link ):
         self.intf2.delete()
 
         # 2. Build OVS Tunnel
-        self.node1.vsctl("add-port s1 {intfname} -- set interface {intfname} type={tunneling} options:remote_ip={serverip}".format(intfname=self.intf1.name, tunneling=tunneling, serverip=self.node2.serverIP))
-        self.node2.vsctl("add-port s2 {intfname} -- set interface {intfname} type={tunneling} options:remote_ip={serverip}".format(intfname=self.intf2.name, tunneling=tunneling, serverip=self.node1.serverIP))
+        self.node1.vsctl("add-port {bridgename} {intfname} -- set interface {intfname} type={tunneling} options:remote_ip={serverip}".format(bridgename=self.intf1.node.name, intfname=self.intf1.name, tunneling=tunneling, serverip=self.node2.serverIP))
+        self.node2.vsctl("add-port {bridgename} {intfname} -- set interface {intfname} type={tunneling} options:remote_ip={serverip}".format(bridgename=self.intf2.node.name, intfname=self.intf2.name, tunneling=tunneling, serverip=self.node1.serverIP))
 
         return True
 
