@@ -87,7 +87,7 @@ class RemoteMixin( object ):
         ips = cls._ipMatchRegex.findall( output )
         ip = ips[ 0 ] if ips else None
         if ip == "127.0.0.1":
-            ip = quietRun('hostname -i')
+            ip = quietRun('hostname -i').strip()
         return ip
 
     @classmethod

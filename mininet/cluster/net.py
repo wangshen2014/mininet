@@ -283,10 +283,12 @@ class MininetCluster( Mininet ):
         if self.tunneling in self.TunnelSupport:
             if not self.tunneling is "ssh":
                 # Find tunnel status
+                keynum = 1
                 for remotelink in self.links:
-                    if remotelink.tunnel:
-                        # Tunnel exsists
-                        remotelink.makeOVSTunnel(self.tunneling)
+                    # Tunnel exsists, and isRemoteOVSSwitch both
+                    if remotelink.isTunnel() and remotelink.isOVSPair():
+                        remotelink.makeOVSTunnel(keynum, tunneling=self.tunneling)
+                        keynum = keynum + 1
         else:
             info('Only implements {0}'.format(self.TunnelSupport))
 
