@@ -207,11 +207,11 @@ class RemoteLink( Link ):
         cmd2 += self.addTunnelOption("remote_ip", self.node1.serverIP)
         cmd2 += self.addTunnelOption("key", keynum)
 
+        self.node1.vsctl(cmd1)
+        self.node2.vsctl(cmd2)
+
         # Check VxLAN Tunnel Status
-        if self.node1.vsctl(cmd1).strip() == "" and self.node2.vsctl(cmd2).strip() == "":
-            return True
-        else:
-            return False
+        return self.getTunnelStatus()
 
     def makeGRETunnel( self, keynum ):
 
@@ -224,11 +224,11 @@ class RemoteLink( Link ):
         cmd2 += self.addTunnelOption("remote_ip", self.node1.serverIP)
         cmd2 += self.addTunnelOption("key", keynum)
 
+        self.node1.vsctl(cmd1)
+        self.node2.vsctl(cmd2)
+
         # Check GRE Tunnel Status
-        if self.node1.vsctl(cmd1).strip() == "" and self.node2.vsctl(cmd2).strip() == "":
-            return True
-        else:
-            return False
+        return self.getTunnelStatus()
 
     def isOVSPair( self ):
         from mininet.cluster.node import RemoteOVSSwitch
@@ -248,4 +248,7 @@ class RemoteLink( Link ):
     def getTunnelStatus( self ):
         intf1_status = self.intf1.node.getOVSDBValue("interface", self.intf1.name, "link_stat").strip()
         intf2_status = self.intf2.node.getOVSDBValue("interface", self.intf2.name, "link_stat").strip()
-        return intf1_status, intf2_status
+        if intf1_status == "up" and intf2_status == "up":
+            return True
+        else:
+            return False
