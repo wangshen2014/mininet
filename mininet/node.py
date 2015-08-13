@@ -1245,6 +1245,10 @@ class OVSSwitch( Switch ):
             switch.shell = None
         return switches
 
+    def getOVSDBValue(self, table, record, column):
+        cmd = [ 'get', table, record, column ]
+        result = self.vsctl(' '.join(cmd))
+        return result
 
 OVSKernelSwitch = OVSSwitch
 

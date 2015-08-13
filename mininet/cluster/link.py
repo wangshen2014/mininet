@@ -241,7 +241,11 @@ class RemoteLink( Link ):
             return True
         return False
 
-    def addTunnelOption(self, key, value):
+    def addTunnelOption( self, key, value ):
         option = " options:" + str(key) + "=" + str(value)
         return option
 
+    def getTunnelStatus( self ):
+        intf1_status = self.intf1.node.getOVSDBValue("interface", self.intf1.name, "link_stat").strip()
+        intf2_status = self.intf2.node.getOVSDBValue("interface", self.intf2.name, "link_stat").strip()
+        return intf1_status, intf2_status
