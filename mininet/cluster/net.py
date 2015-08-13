@@ -288,7 +288,7 @@ class MininetCluster( Mininet ):
                     # Tunnel exsists, and isRemoteOVSSwitch both
                     if remotelink.isTunnel() and remotelink.isOVSPair():
                         remotelink.makeOVSTunnel(keynum, tunneling=self.tunneling)
-                        keynum = keynum + 1
+                        keynum += 1
         else:
             info('Only implements {0}'.format(self.TunnelSupport))
 
