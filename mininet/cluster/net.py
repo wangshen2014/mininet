@@ -90,9 +90,9 @@ from mininet.util import quietRun, errRun
 from mininet.link import Link, Intf
 from mininet.cluster.node import RemoteHost, RemoteOVSSwitch, RemoteMixin
 from mininet.cluster.link import RemoteLink
-from mininet.cluster.cleanup import *
+from mininet.cluster.clean import *
 from mininet.cluster.placer import SwitchBinPlacer
-from mininet.examples.clustercli import CLI
+from mininet.cluster.cli import CLI
 
 import os
 import sys
@@ -283,10 +283,12 @@ class MininetCluster( Mininet ):
         if self.tunneling in self.TunnelSupport:
             if not self.tunneling is "ssh":
                 # Find tunnel status
+                keynum = 1
                 for remotelink in self.links:
-                    if remotelink.tunnel:
-                        # Tunnel exsists
-                        remotelink.makeOVSTunnel(self.tunneling)
+                    # Tunnel exsists, and isRemoteOVSSwitch both
+                    if remotelink.isTunnel() and remotelink.isOVSPair():
+                        remotelink.makeOVSTunnel(keynum, tunneling=self.tunneling)
+                        keynum += 1
         else:
             info('Only implements {0}'.format(self.TunnelSupport))
 

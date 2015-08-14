@@ -3,7 +3,6 @@
 from mininet.link import Link, Intf
 from mininet.log import setLogLevel, debug, info, error
 from mininet.util import quietRun, errRun
-import pdb
 
 class RemoteLink( Link ):
     "A RemoteLink is a link between nodes which may be on different servers"
@@ -179,22 +178,77 @@ class RemoteLink( Link ):
         result = "%s %s" % ( Link.status( self ), status )
         return result
 
-    def makeOVSTunnel( self, tunneling=None ):
+    def makeOVSTunnel( self, keynum, tunneling=None ):
         "Make OVS tunnel"
         if tunneling is None:
             tunneling = self.tunneling
-        # 1. Delete interface abount original tunnel
+
         # Delete interface from openvswitch
-        self.node1.vsctl("del-port {intfname}".format(intfname=self.intf1.name))
-        self.node2.vsctl("del-port {intfname}".format(intfname=self.intf2.name))
+        self.node1.vsctl('del-port', self.intf1.name)
+        self.node2.vsctl('del-port', self.intf2.name)
 
         # Delete interface from namespace
-        self.intf1.delete()
-        self.intf2.delete()
+        self.stop()
 
-        # 2. Build OVS Tunnel
-        self.node1.vsctl("add-port s1 {intfname} -- set interface {intfname} type={tunneling} options:remote_ip={serverip}".format(intfname=self.intf1.name, tunneling=tunneling, serverip=self.node2.serverIP))
-        self.node2.vsctl("add-port s2 {intfname} -- set interface {intfname} type={tunneling} options:remote_ip={serverip}".format(intfname=self.intf2.name, tunneling=tunneling, serverip=self.node1.serverIP))
+        if tunneling is "vxlan":
+            self.makeVxLANTunnel(keynum)
+        if tunneling is "gre":
+            self.makeGRETunnel(keynum)
 
         return True
 
+    def makeVxLANTunnel( self, keynum ):
+
+        cmd1 = "add-port {bridgename} {intfname} -- set interface {intfname} type=vxlan".format(bridgename=self.intf1.node.name, intfname=self.intf1.name)
+        cmd1 += self.addTunnelOption("remote_ip", self.node2.serverIP)
+        cmd1 += self.addTunnelOption("key", keynum)
+
+        cmd2 = "add-port {bridgename} {intfname} -- set interface {intfname} type=vxlan".format(bridgename=self.intf2.node.name, intfname=self.intf2.name)
+        cmd2 += self.addTunnelOption("remote_ip", self.node1.serverIP)
+        cmd2 += self.addTunnelOption("key", keynum)
+
+        self.node1.vsctl(cmd1)
+        self.node2.vsctl(cmd2)
+
+        # Check VxLAN Tunnel Status
+        return self.getTunnelStatus()
+
+    def makeGRETunnel( self, keynum ):
+
+        cmd1 = "add-port {bridgename} {intfname} -- set interface {intfname} type=gre".format(bridgename=self.intf1.node.name, intfname=self.intf1.name)
+        cmd1 += self.addTunnelOption("remote_ip", self.node2.serverIP)
+        cmd1 += self.addTunnelOption("key", keynum)
+
+
+        cmd2 = "add-port {bridgename} {intfname} -- set interface {intfname} type=gre".format(bridgename=self.intf2.node.name, intfname=self.intf2.name)
+        cmd2 += self.addTunnelOption("remote_ip", self.node1.serverIP)
+        cmd2 += self.addTunnelOption("key", keynum)
+
+        self.node1.vsctl(cmd1)
+        self.node2.vsctl(cmd2)
+
+        # Check GRE Tunnel Status
+        return self.getTunnelStatus()
+
+    def isOVSPair( self ):
+        from mininet.cluster.node import RemoteOVSSwitch
+        if isinstance(self.node1, RemoteOVSSwitch) and isinstance(self.node2, RemoteOVSSwitch):
+            return True
+        return False
+
+    def isTunnel( self ):
+        if self.tunnel:
+            return True
+        return False
+
+    def addTunnelOption( self, key, value ):
+        option = " options:" + str(key) + "=" + str(value)
+        return option
+
+    def getTunnelStatus( self ):
+        intf1_status = self.intf1.node.getOVSDBValue("interface", self.intf1.name, "link_stat").strip()
+        intf2_status = self.intf2.node.getOVSDBValue("interface", self.intf2.name, "link_stat").strip()
+        if intf1_status == "up" and intf2_status == "up":
+            return True
+        else:
+            return False

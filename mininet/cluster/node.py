@@ -11,7 +11,7 @@ from mininet.node import Node, Host, OVSSwitch, Controller
 from mininet.log import setLogLevel, debug, info, error
 from mininet.util import quietRun, errRun
 from subprocess import Popen, PIPE, STDOUT
-from mininet.cluster.cleanup import *
+from mininet.cluster.clean import *
 from mininet.cluster.link import RemoteLink
 
 import os
@@ -87,7 +87,7 @@ class RemoteMixin( object ):
         ips = cls._ipMatchRegex.findall( output )
         ip = ips[ 0 ] if ips else None
         if ip == "127.0.0.1":
-            ip = quietRun('hostname -i')
+            ip = quietRun('hostname -i').strip()
         return ip
 
     @classmethod
