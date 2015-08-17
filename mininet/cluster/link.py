@@ -200,10 +200,12 @@ class RemoteLink( Link ):
     def makeVxLANTunnel( self, keynum ):
 
         cmd1 = "add-port {bridgename} {intfname} -- set interface {intfname} type=vxlan".format(bridgename=self.intf1.node.name, intfname=self.intf1.name)
+        cmd1 += self.addTunnelOption("local_ip", self.node1.serverIP)
         cmd1 += self.addTunnelOption("remote_ip", self.node2.serverIP)
         cmd1 += self.addTunnelOption("key", keynum)
 
         cmd2 = "add-port {bridgename} {intfname} -- set interface {intfname} type=vxlan".format(bridgename=self.intf2.node.name, intfname=self.intf2.name)
+        cmd2 += self.addTunnelOption("local_ip", self.node2.serverIP)
         cmd2 += self.addTunnelOption("remote_ip", self.node1.serverIP)
         cmd2 += self.addTunnelOption("key", keynum)
 
