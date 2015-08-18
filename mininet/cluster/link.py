@@ -190,42 +190,47 @@ class RemoteLink( Link ):
         # Delete interface from namespace
         self.stop()
 
-        if tunneling is "vxlan":
+        if tunneling == "vxlan":
             self.makeVxLANTunnel(keynum)
-        if tunneling is "gre":
+        if tunneling == "gre":
             self.makeGRETunnel(keynum)
 
         return True
 
     def makeVxLANTunnel( self, keynum ):
 
-        cmd1 = "add-port {bridgename} {intfname} -- set interface {intfname} type=vxlan".format(bridgename=self.intf1.node.name, intfname=self.intf1.name)
-        cmd1 += self.addTunnelOption("remote_ip", self.node2.serverIP)
-        cmd1 += self.addTunnelOption("key", keynum)
+        cmd1 = [ 'add-port', self.intf1.node.name, self.intf1.name, '--', 'set', 'interface', self.intf1.name, 'type=vxlan' ]
+        cmd1.extend(self.addTunnelOption("local_ip", self.node1.serverIP))
+        cmd1.extend(self.addTunnelOption("remote_ip", self.node2.serverIP))
+        cmd1.extend(self.addTunnelOption("key", keynum))
+        debug('Node1 name: {0} cmd: {1}'.format(self.intf1.node.name, ' '.join(cmd1)))
 
-        cmd2 = "add-port {bridgename} {intfname} -- set interface {intfname} type=vxlan".format(bridgename=self.intf2.node.name, intfname=self.intf2.name)
-        cmd2 += self.addTunnelOption("remote_ip", self.node1.serverIP)
-        cmd2 += self.addTunnelOption("key", keynum)
+        cmd2 = [ 'add-port', self.intf2.node.name, self.intf2.name, '--', 'set', 'interface', self.intf2.name, 'type=vxlan' ]
+        cmd2.extend(self.addTunnelOption("local_ip", self.node2.serverIP))
+        cmd2.extend(self.addTunnelOption("remote_ip", self.node1.serverIP))
+        cmd2.extend(self.addTunnelOption("key", keynum))
+        debug('Node2 name: {0} cmd: {1}'.format(self.intf2.node.name, ' '.join(cmd2)))
 
-        self.node1.vsctl(cmd1)
-        self.node2.vsctl(cmd2)
+        self.node1.vsctl(' '.join(cmd1))
+        self.node2.vsctl(' '.join(cmd2))
 
         # Check VxLAN Tunnel Status
         return self.getTunnelStatus()
 
     def makeGRETunnel( self, keynum ):
 
-        cmd1 = "add-port {bridgename} {intfname} -- set interface {intfname} type=gre".format(bridgename=self.intf1.node.name, intfname=self.intf1.name)
-        cmd1 += self.addTunnelOption("remote_ip", self.node2.serverIP)
-        cmd1 += self.addTunnelOption("key", keynum)
+        cmd1 = [ 'add-port', self.intf1.node.name, self.intf1.name, '--', 'set', 'interface', self.intf1.name, 'type=gre' ]
+        cmd1.extend(self.addTunnelOption("remote_ip", self.node2.serverIP))
+        cmd1.extend(self.addTunnelOption("key", keynum))
+        debug('Node1 name: {0} cmd: {1}'.format(self.intf1.node.name, ' '.join(cmd1)))
 
+        cmd2 = [ 'add-port', self.intf2.node.name, self.intf2.name, '--', 'set', 'interface', self.intf2.name, 'type=gre' ]
+        cmd2.extend(self.addTunnelOption("remote_ip", self.node1.serverIP))
+        cmd2.extend(self.addTunnelOption("key", keynum))
+        debug('Node2 name: {0} cmd: {1}'.format(self.intf2.node.name, ' '.join(cmd2)))
 
-        cmd2 = "add-port {bridgename} {intfname} -- set interface {intfname} type=gre".format(bridgename=self.intf2.node.name, intfname=self.intf2.name)
-        cmd2 += self.addTunnelOption("remote_ip", self.node1.serverIP)
-        cmd2 += self.addTunnelOption("key", keynum)
-
-        self.node1.vsctl(cmd1)
-        self.node2.vsctl(cmd2)
+        self.node1.vsctl(' '.join(cmd1))
+        self.node2.vsctl(' '.join(cmd2))
 
         # Check GRE Tunnel Status
         return self.getTunnelStatus()
@@ -242,8 +247,8 @@ class RemoteLink( Link ):
         return False
 
     def addTunnelOption( self, key, value ):
-        option = " options:" + str(key) + "=" + str(value)
-        return option
+        options = [ 'options:' + str(key) + '=' + str(value) ]
+        return options
 
     def getTunnelStatus( self ):
         intf1_status = self.intf1.node.getOVSDBValue("interface", self.intf1.name, "link_stat").strip()

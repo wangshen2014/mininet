@@ -135,6 +135,7 @@ class MininetCluster( Mininet ):
         self.cdir = os.environ[ 'HOME' ] + '/.ssh/mn'
         errRun( [ 'mkdir', '-p', self.cdir ] )
         self.tunneling = params.pop( 'tunneling', 'ssh' )  # Get tunnel mechanism, default 'ssh'
+        self.tunneling = self.tunneling.lower()
         Mininet.__init__( self, *args, **params )
 
     def popen( self, cmd ):
