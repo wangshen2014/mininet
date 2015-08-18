@@ -190,9 +190,9 @@ class RemoteLink( Link ):
         # Delete interface from namespace
         self.stop()
 
-        if tunneling is "vxlan":
+        if tunneling == "vxlan":
             self.makeVxLANTunnel(keynum)
-        if tunneling is "gre":
+        if tunneling == "gre":
             self.makeGRETunnel(keynum)
 
         return True
