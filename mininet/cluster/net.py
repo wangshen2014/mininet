@@ -282,7 +282,7 @@ class MininetCluster( Mininet ):
         info('\n')
         info( '*** Tunneling Mechanism: %s\n' % self.tunneling )
         if self.tunneling in self.TunnelSupport:
-            if not self.tunneling is "ssh":
+            if self.tunneling != "ssh":
                 # Find tunnel status
                 keynum = 1
                 for remotelink in self.links:
