@@ -13,7 +13,7 @@ class Placer( object ):
     "Node placement algorithm for MininetCluster"
 
     def __init__( self, servers=None, nodes=None, hosts=None,
-                  switches=None, controllers=None, links=None ):
+                  switches=None, controllers=None, links=None, root_node=None ):
         """Initialize placement object
            servers: list of servers
            nodes: list of all nodes
@@ -29,6 +29,7 @@ class Placer( object ):
         self.switches = switches or []
         self.controllers = controllers or []
         self.links = links or []
+        self.root_node = root_node or ""
 
     def place( self, node ):
         "Return server for a given node"
@@ -201,8 +202,7 @@ class DFSPlacer( NetworkXGraph ):
 
     def __init__( self, *args, **kwargs ):
         NetworkXGraph.__init__( self, *args, **kwargs )
-        self.root = "s1"
-        self.travel_list = list( networkx.dfs_preorder_nodes( self.graph, self.root ) )
+        self.travel_list = list( networkx.dfs_preorder_nodes( self.graph, self.root_node ) )
         info( "DFS Tree travelsal: {0}\n".format( self.travel_list ) )
 
     def place( self, nodename ):

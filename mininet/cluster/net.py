@@ -136,6 +136,7 @@ class MininetCluster( Mininet ):
         errRun( [ 'mkdir', '-p', self.cdir ] )
         self.tunneling = params.pop( 'tunneling', 'ssh' )  # Get tunnel mechanism, default 'ssh'
         self.tunneling = self.tunneling.lower()
+        self.root_node = params.pop( 'root_node', 's1' )
         Mininet.__init__( self, *args, **params )
 
     def popen( self, cmd ):
@@ -196,7 +197,8 @@ class MininetCluster( Mininet ):
                                  nodes=self.topo.nodes(),
                                  hosts=self.topo.hosts(),
                                  switches=self.topo.switches(),
-                                 links=self.topo.links() )
+                                 links=self.topo.links(),
+                                 root_node=self.root_node )
         for node in nodes:
             config = self.topo.nodeInfo( node )
             # keep local server name consistent accross nodes
