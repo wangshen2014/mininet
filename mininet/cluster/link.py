@@ -246,7 +246,8 @@ class RemoteLink( Link ):
             return True
         return False
 
-    def addTunnelOption( self, key, value ):
+    @staticmethod
+    def addTunnelOption( key, value ):
         options = [ 'options:' + str(key) + '=' + str(value) ]
         return options
 
