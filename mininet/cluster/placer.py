@@ -3,6 +3,7 @@
 
 from mininet.util import quietRun, errRun
 from mininet.log import setLogLevel, debug, info, error
+import networkx
 
 import os
 from random import randrange
@@ -12,7 +13,7 @@ class Placer( object ):
     "Node placement algorithm for MininetCluster"
 
     def __init__( self, servers=None, nodes=None, hosts=None,
-                  switches=None, controllers=None, links=None ):
+                  switches=None, controllers=None, links=None, root_node=None ):
         """Initialize placement object
            servers: list of servers
            nodes: list of all nodes
@@ -28,6 +29,7 @@ class Placer( object ):
         self.switches = switches or []
         self.controllers = controllers or []
         self.links = links or []
+        self.root_node = root_node or ""
 
     def place( self, node ):
         "Return server for a given node"
@@ -170,3 +172,42 @@ class HostSwitchBinPlacer( Placer ):
             info( 'warning: unknown node', nodename )
             server = self.servdict[ 0 ]
         return server
+
+def partition( lst, n ):
+
+    #
+    # n nearly-equal-length partitions
+    #
+    # lst: node list
+    # n: The numbers of servers
+    #
+    # Reference: http://stackoverflow.com/questions/2659900/python-slicing-a-list-into-n-nearly-equal-length-partitions
+
+    division = len( lst ) / float( n )
+    return [ lst[ int( round( division * i ) ): int( round( division * ( i + 1 ) ) ) ] for i in xrange( n ) ]
+
+def get_own_server( target, chunks ):
+    for index in xrange( len( chunks ) ):
+        if target in chunks[ index ]:
+            return index
+
+class NetworkXGraph( Placer ):
+
+    def __init__( self, *args, **kwargs ):
+        Placer.__init__( self, *args, **kwargs )
+        self.graph = networkx.Graph()
+        self.graph.add_edges_from( self.links )
+
+class DFSPlacer( NetworkXGraph ):
+
+    def __init__( self, *args, **kwargs ):
+        NetworkXGraph.__init__( self, *args, **kwargs )
+        self.travel_list = list( networkx.dfs_preorder_nodes( self.graph, self.root_node ) )
+        info( "DFS Tree travelsal: {0}\n".format( self.travel_list ) )
+
+    def place( self, nodename ):
+
+        # Use n nearly-equal-length partitions
+        chunks = partition( self.travel_list, len( self.servers ) )
+
+        return self.servers[ get_own_server( nodename, chunks ) ]

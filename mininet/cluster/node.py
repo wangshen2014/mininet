@@ -11,7 +11,7 @@ from mininet.node import Node, Host, OVSSwitch, Controller
 from mininet.log import setLogLevel, debug, info, error
 from mininet.util import quietRun, errRun
 from subprocess import Popen, PIPE, STDOUT
-from mininet.cluster.clean import *
+from mininet.cluster.clean import ClusterCleanup, findUser
 from mininet.cluster.link import RemoteLink
 
 import os
