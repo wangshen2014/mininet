@@ -283,18 +283,29 @@ class MininetCluster( Mininet ):
         # Tunneling mechanism handle
         info('\n')
         info( '*** Tunneling Mechanism: %s\n' % self.tunneling )
-        if self.tunneling in self.TunnelSupport and self.tunneling != "ssh":
-            keynum = 1
-            for remotelink in self.links:
-                # Tunnel exsists, and isRemoteOVSSwitch both
-                if remotelink.isTunnel() and remotelink.isOVSPair():
-                    remotelink.makeOVSTunnel(keynum, tunneling=self.tunneling)
-                    keynum += 1
+        ssh_count, ovs_key_count = 0, 0
+        for remotelink in self.links:
+            # Tunnel exsists
+            if remotelink.isTunnel():
+                ssh_count += 1
+                if remotelink.isOVSPair():
+                    remotelink.makeOVSTunnel(ovs_key_count, tunneling=self.tunneling)
+                    ovs_key_count += 1
         else:
             info('Only implements {0}'.format(self.TunnelSupport))
 
         if self.waitConn:
             self.waitConnected()
+
+        info( '*** Topology infomation\n' )
+        info( 'Total of Hosts: {0}\n'.format(len(self.hosts)))
+        info( 'Total of Switches: {0}\n'.format(len(self.switches)))
+        info( 'Total of Links ( local-links + cross-links ): {0}\n'.format(len(self.links)))
+        info( 'Total of Local-links (veth pair): {0}\n'.format(len(self.links) - ssh_count - ovs_key_count))
+        if ssh_count != 0:
+            info( 'Total of Cross-links (ssh) between Switch and Host: {0}\n'.format(ssh_count))
+        if ovs_key_count != 0:
+            info( 'Total of Cross-links ({0}) between Switch and Switch: {1}\n'.format(self.tunneling, ovs_key_count))
 
 
 def testNsTunnels():
