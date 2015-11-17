@@ -107,7 +107,7 @@ class MininetCluster( Mininet ):
     # BatchMode yes: don't ask for password
     # ForwardAgent yes: forward authentication credentials
     sshcmd = [ 'ssh', '-o', 'BatchMode=yes', '-o', 'ForwardAgent=yes' ]
-    TunnelSupport = [ 'ssh', 'vxlan', 'gre' ]
+    TunnelSupport = [ 'ssh', 'vxlan', 'gre', "geneve" ]
 
     def __init__( self, *args, **kwargs ):
         """servers: a list of servers to use (note: include
