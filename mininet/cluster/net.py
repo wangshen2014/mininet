@@ -288,7 +288,7 @@ class MininetCluster( Mininet ):
             # Tunnel exsists
             if remotelink.isTunnel():
                 ssh_count += 1
-                if remotelink.isOVSPair():
+                if self.tunneling != "ssh" and remotelink.isOVSPair():
                     remotelink.makeOVSTunnel(ovs_key_count, tunneling=self.tunneling)
                     ovs_key_count += 1
         else:
