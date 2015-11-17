@@ -292,7 +292,7 @@ class MininetCluster( Mininet ):
                     remotelink.makeOVSTunnel(ovs_key_count, tunneling=self.tunneling)
                     ovs_key_count += 1
         else:
-            info('Only implements {0}'.format(self.TunnelSupport))
+            info('Only implements {0}\n'.format(self.TunnelSupport))
 
         if self.waitConn:
             self.waitConnected()
