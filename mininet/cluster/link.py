@@ -190,71 +190,22 @@ class RemoteLink( Link ):
         # Delete interface from namespace
         self.stop()
 
-        if tunneling == "vxlan":
-            self.makeVxLANTunnel(keynum)
-        if tunneling == "gre":
-            self.makeGRETunnel(keynum)
-        if tunneling == "geneve":
-            self.makeGENEVETunnel(keynum)
-
-        return True
-
-    def makeVxLANTunnel( self, keynum ):
-
-        cmd1 = [ 'add-port', self.intf1.node.name, self.intf1.name, '--', 'set', 'interface', self.intf1.name, 'type=vxlan' ]
+        cmd1 = [ 'add-port', self.intf1.node.name, self.intf1.name, '--', 'set', 'interface', self.intf1.name, 'type=%s' % (tunneling) ]
         cmd1.extend(self.addTunnelOption("local_ip", self.node1.serverIP))
         cmd1.extend(self.addTunnelOption("remote_ip", self.node2.serverIP))
         cmd1.extend(self.addTunnelOption("key", keynum))
-        debug('Node1 name: {0} cmd: {1}'.format(self.intf1.node.name, ' '.join(cmd1)))
+        debug('Node1 name: {0} cmd: {1}\n'.format(self.intf1.node.name, ' '.join(cmd1)))
 
-        cmd2 = [ 'add-port', self.intf2.node.name, self.intf2.name, '--', 'set', 'interface', self.intf2.name, 'type=vxlan' ]
+        cmd2 = [ 'add-port', self.intf2.node.name, self.intf2.name, '--', 'set', 'interface', self.intf2.name, 'type=%s' % (tunneling) ]
         cmd2.extend(self.addTunnelOption("local_ip", self.node2.serverIP))
         cmd2.extend(self.addTunnelOption("remote_ip", self.node1.serverIP))
         cmd2.extend(self.addTunnelOption("key", keynum))
-        debug('Node2 name: {0} cmd: {1}'.format(self.intf2.node.name, ' '.join(cmd2)))
+        debug('Node2 name: {0} cmd: {1}\n'.format(self.intf2.node.name, ' '.join(cmd2)))
 
         self.node1.vsctl(' '.join(cmd1))
         self.node2.vsctl(' '.join(cmd2))
 
-        # Check VxLAN Tunnel Status
-        return self.getTunnelStatus()
-
-    def makeGRETunnel( self, keynum ):
-
-        cmd1 = [ 'add-port', self.intf1.node.name, self.intf1.name, '--', 'set', 'interface', self.intf1.name, 'type=gre' ]
-        cmd1.extend(self.addTunnelOption("remote_ip", self.node2.serverIP))
-        cmd1.extend(self.addTunnelOption("key", keynum))
-        debug('Node1 name: {0} cmd: {1}'.format(self.intf1.node.name, ' '.join(cmd1)))
-
-        cmd2 = [ 'add-port', self.intf2.node.name, self.intf2.name, '--', 'set', 'interface', self.intf2.name, 'type=gre' ]
-        cmd2.extend(self.addTunnelOption("remote_ip", self.node1.serverIP))
-        cmd2.extend(self.addTunnelOption("key", keynum))
-        debug('Node2 name: {0} cmd: {1}'.format(self.intf2.node.name, ' '.join(cmd2)))
-
-        self.node1.vsctl(' '.join(cmd1))
-        self.node2.vsctl(' '.join(cmd2))
-
-        # Check GRE Tunnel Status
-        return self.getTunnelStatus()
-
-    def makeGENEVETunnel( self, keynum ):
-
-        cmd1 = [ 'add-port', self.intf1.node.name, self.intf1.name, '--', 'set', 'interface', self.intf1.name, 'type=geneve' ]
-        cmd1.extend(self.addTunnelOption("local_ip", self.node1.serverIP))
-        cmd1.extend(self.addTunnelOption("remote_ip", self.node2.serverIP))
-        cmd1.extend(self.addTunnelOption("key", keynum))
-        debug('Node1 name: {0} cmd: {1}'.format(self.intf1.node.name, ' '.join(cmd1)))
-
-        cmd2 = [ 'add-port', self.intf2.node.name, self.intf2.name, '--', 'set', 'interface', self.intf2.name, 'type=geneve' ]
-        cmd2.extend(self.addTunnelOption("local_ip", self.node2.serverIP))
-        cmd2.extend(self.addTunnelOption("remote_ip", self.node1.serverIP))
-        cmd2.extend(self.addTunnelOption("key", keynum))
-        debug('Node2 name: {0} cmd: {1}'.format(self.intf2.node.name, ' '.join(cmd2)))
-
-        self.node1.vsctl(' '.join(cmd1))
-        self.node2.vsctl(' '.join(cmd2))
-
-        # Check Geneve Tunnel Status
+        # Return Tunnel Status
         return self.getTunnelStatus()
 
     def isOVSPair( self ):
