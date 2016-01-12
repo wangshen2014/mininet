@@ -211,3 +211,17 @@ class DFSPlacer( NetworkXGraph ):
         chunks = partition( self.travel_list, len( self.servers ) )
 
         return self.servers[ get_own_server( nodename, chunks ) ]
+
+class BFSPlacer( NetworkXGraph ):
+
+    def __init__( self, *args, **kwargs ):
+        NetworkXGraph.__init__( self, *args, **kwargs )
+        self.travel_list = list( networkx.bfs_tree( self.graph, self.root_node ) )
+        info("BFS Tree travelsal: {0}\n".format( self.travel_list ) )
+
+    def place( self, nodename ):
+
+        # Use n nearly-equal-length partitions
+        chunks = partition( self.travel_list, len( self.servers ))
+        return self.servers[ get_own_server( nodename, chunks ) ]
+
