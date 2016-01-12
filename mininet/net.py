@@ -117,7 +117,7 @@ class Mininet( object ):
     def __init__( self, topo=None, switch=OVSKernelSwitch, host=Host,
                   controller=DefaultController, link=Link, intf=Intf,
                   build=True, xterms=False, cleanup=False, ipBase='10.0.0.0/8',
-                  inNamespace=False, ap=AP,
+                  inNamespace=False, ap=AP, sta=Station,
                   autoSetMacs=False, autoStaticArp=False, autoPinCpus=False,
                   listenPort=None, waitConnected=False ):
         """Create Mininet object.
@@ -142,6 +142,7 @@ class Mininet( object ):
         self.host = host
         self.controller = controller
         self.ap = ap
+        self.sta = sta
         self.link = link
         self.intf = intf
         self.ipBase = ipBase
@@ -259,7 +260,7 @@ class Mininet( object ):
         self.nameToNode[ name ] = ap
         return ap
 
-    def addStation( self, name, cls=None, **params ):
+    def addStation( self, name, wifiSegment, cls=None, **params ):
         defaults = { 'ip': ipAdd( self.nextIP,
                                   ipBaseNum=self.ipBaseNum,
                                   prefixLen=self.prefixLen ) +
@@ -271,7 +272,9 @@ class Mininet( object ):
             self.nextCore = ( self.nextCore + 1 ) % self.numCores
         self.nextIP += 1
         defaults.update( params )
-        sta = Station( name, **defaults )
+        if not cls:
+            cls = self.sta
+        sta = cls( name, wifiSegment, **defaults )
         self.hosts.append( sta )
         self.nameToNode[ name ] = sta
         return sta

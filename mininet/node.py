@@ -1539,11 +1539,12 @@ class AP( OVSSwitch ):
         OVSSwitch.__init__( self, name, **params )
         self.channelNumber = channelNumber
         self.MobilityModel = MobilityModel
-        self.x, self.y, self.z = params.get('positions')
         self.ssid = ssid
         self.wifiSegment = wifiSegment
         self.setMobilityModel(self.MobilityModel)
-        self.setPosition(self.x, self.y, self.z)
+
+        if params.get('positions'):
+            self.setPosition(params.get('positions')[0], params.get('positions')[1], params.get('positions')[2])
 
         if isinstance(wifiSegment, mininet.ns3.WifiSegment):
             wifiSegment.addAp(self, channelNumber=self.channelNumber, ssid=self.ssid)
@@ -1556,4 +1557,29 @@ class AP( OVSSwitch ):
 
 
 class Station ( Host ):
-    pass
+
+    def __init__( self, name, wifiSegment, MobilityModel=None, Position=None, channelNumber=6, ssid='opennet', **params):
+        Node.__init__( self, name, **params )
+        self.channelNumber = channelNumber
+        self.MobilityModel = MobilityModel
+        self.ssid = ssid
+        self.wifiSegment = wifiSegment
+        self.setMobilityModel(self.MobilityModel)
+
+        if params.get('positions'):
+            self.setPosition(params.get('positions')[0], params.get('positions')[1], params.get('positions')[2])
+
+        if params.get('velocitys'):
+            self.setVelocity(params.get('velocitys')[0], params.get('velocitys')[1], params.get('velocitys')[2])
+
+        if isinstance(wifiSegment, mininet.ns3.WifiSegment):
+            wifiSegment.addSta(self, channelNumber=self.channelNumber, ssid=self.ssid)
+
+    def setPosition(self, x, y, z):
+        mininet.ns3.setPosition(self, x, y, z)
+
+    def setMobilityModel(self, model):
+        mininet.ns3.setMobilityModel(self, model)
+
+    def setVelocity(self, x, y, z):
+        mininet.ns3.setVelocity(self, x, y, z)
