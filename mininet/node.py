@@ -1530,8 +1530,11 @@ def NullController( *_args, **_kwargs ):
     return None
 
 
-import mininet.ns3
-from mininet.ns3 import WifiSegment
+
+try:
+    import mininet.ns3
+except ImportError:
+    print "Please use ./waf shell and python setup.py install in mininet"
 
 class AP( OVSSwitch ):
 
