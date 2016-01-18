@@ -1534,7 +1534,7 @@ def NullController( *_args, **_kwargs ):
 try:
     import mininet.ns3
 except ImportError:
-    print "Please use ./waf shell and python setup.py install in mininet"
+    print "Please use ./waf_shell in OpenNet home location"
 
 class AP( OVSSwitch ):
 
