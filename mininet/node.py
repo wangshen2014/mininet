@@ -1529,60 +1529,8 @@ def NullController( *_args, **_kwargs ):
     "Nonexistent controller - simply returns None"
     return None
 
-
-
-try:
-    import mininet.ns3
-except ImportError:
-    print "Please use ./waf_shell in OpenNet home location"
-
-class AP( OVSSwitch ):
-
-    def __init__( self, name, wifiSegment, MobilityModel=None, Position=None, channelNumber=6, ssid='opennet', **params ):
-        OVSSwitch.__init__( self, name, **params )
-        self.channelNumber = channelNumber
-        self.MobilityModel = MobilityModel
-        self.ssid = ssid
-        self.wifiSegment = wifiSegment
-        self.setMobilityModel(self.MobilityModel)
-
-        if params.get('positions'):
-            self.setPosition(params.get('positions')[0], params.get('positions')[1], params.get('positions')[2])
-
-        if isinstance(wifiSegment, mininet.ns3.WifiSegment):
-            wifiSegment.addAp(self, channelNumber=self.channelNumber, ssid=self.ssid)
-
-    def setPosition(self, x, y, z):
-        mininet.ns3.setPosition(self, x, y, z)
-
-    def setMobilityModel(self, model):
-        mininet.ns3.setMobilityModel(self, model)
-
+class AP ( OVSSwitch ):
+    pass
 
 class Station ( Host ):
-
-    def __init__( self, name, wifiSegment, MobilityModel=None, Position=None, channelNumber=6, ssid='opennet', **params):
-        Node.__init__( self, name, **params )
-        self.channelNumber = channelNumber
-        self.MobilityModel = MobilityModel
-        self.ssid = ssid
-        self.wifiSegment = wifiSegment
-        self.setMobilityModel(self.MobilityModel)
-
-        if params.get('positions'):
-            self.setPosition(params.get('positions')[0], params.get('positions')[1], params.get('positions')[2])
-
-        if params.get('velocitys'):
-            self.setVelocity(params.get('velocitys')[0], params.get('velocitys')[1], params.get('velocitys')[2])
-
-        if isinstance(wifiSegment, mininet.ns3.WifiSegment):
-            wifiSegment.addSta(self, channelNumber=self.channelNumber, ssid=self.ssid)
-
-    def setPosition(self, x, y, z):
-        mininet.ns3.setPosition(self, x, y, z)
-
-    def setMobilityModel(self, model):
-        mininet.ns3.setMobilityModel(self, model)
-
-    def setVelocity(self, x, y, z):
-        mininet.ns3.setVelocity(self, x, y, z)
+    pass
