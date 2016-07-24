@@ -1,4 +1,4 @@
-from re import findall
+import re
 from threading import Thread
 from time import sleep
 import socket
@@ -30,7 +30,7 @@ class Lte (object):
                   mode='Master', imsiBase=0, cellIdBase=0,
                   ueIpBase='7.0.0.1', ueGwIpAddr='7.0.0.1',
                   pgwIpBase='1.0.0.0', pgwMask='255.0.0.0',
-                  homeEnbTxPower=30.0, epcSwitch=None):
+                  homeEnbTxPower=30.0, epcSwitch=None, slaveName='slaveTap'):
 
         if epcSwitch == None:
             error ('*** error: epcSwitch is a required argument.\n')
@@ -45,7 +45,8 @@ class Lte (object):
             self.attachDelay = 10.0
             self.nextAddr = 2
         elif mode == 'Slave':
-            self.addEpcEntity (self.epcSwitch, 'slaveTap')
+            Config.SetDefault ("ns3::TapEpcHelper::EpcSlaveDeviceName", StringValue (slaveName))
+            self.addEpcEntity (self.epcSwitch, slaveName)
             self.attachDelay = 10.0
             self.nextAddr = 1
         else:
@@ -130,7 +131,7 @@ class Lte (object):
 
     def allocateIp (self):
         pat = '[0-9]*\.[0-9]*\.[0-9]*\.'
-        base = (findall (pat, self.ueIpBase))[0]
+        base = (re.findall (pat, self.ueIpBase))[0]
         ip = "{0}{1}".format (base, str (self.nextAddr))
         self.nextAddr += 1
         return ip
@@ -210,7 +211,7 @@ class Lte (object):
             self.node.cmd ('ip route add default via {0}'.format (self.ueGwIpAddr))
             self.node.cmd ('arp -s {0} 00:00:00:00:00:00'.format (self.ueGwIpAddr))
             pat = '[0-9]*\.'
-            route = (findall (pat, self.ueIp))[0] + '0.0.0'
+            route = (re.findall (pat, self.ueIp))[0] + '0.0.0'
             self.node.cmd ('ip route del {0}/8'.format (route))
 
         def cmd (self, *args, **kwargs):
@@ -242,7 +243,7 @@ class LteCluster (object):
                   ueIpBase='7.0.0.1', ueGwIpAddr='7.0.0.1',
                   pgwIpBase='1.0.0.0', pgwMask='255.0.0.0',
                   epcSwitch=None, server=None, serverIp=None, port=53724, logFile=None,
-                  homeEnbTxPower=30.0):
+                  homeEnbTxPower=30.0, slaveName='slaveTap'):
 
         if epcSwitch == None:
             error ('*** error: epcSwitch is a required argument.\n')
@@ -272,7 +273,14 @@ class LteCluster (object):
             self.nextAddr = 2
 
         elif mode == 'Slave':
-            self.addEpcEntity (self.epcSwitch, 'slaveTap')
+            cmd = 'Config.SetDefault ("ns3::TapEpcHelper::EpcSlaveDeviceName", StringValue ("{0}"))\n'.format (str (slaveName))
+            self.csock.sendall (cmd)
+            IpBase = re.sub (r'[0-9]*\.([0-9]*\.[0-9]*\.[0-9])', r'0.\1', ueIpBase)
+            cmd = 'Config.SetDefault ("ns3::TapEpcHelper::SlaveUeIpAddressBase", StringValue ("{0}"))\n'.format (str (IpBase))
+            self.csock.sendall (cmd)
+            cmd = 'Config.SetDefault ("ns3::TapEpcHelper::SlaveIpAddressBase", StringValue ("{0}"))\n'.format (str (IpBase))
+            self.csock.sendall (cmd)
+            self.addEpcEntity (self.epcSwitch, slaveName)
             self.nextAddr = 1
 
         else:
@@ -429,7 +437,7 @@ class LteCluster (object):
 
     def allocateIp (self):
         pat = '[0-9]*\.[0-9]*\.[0-9]*\.'
-        base = (findall (pat, self.ueIpBase))[0]
+        base = (re.findall (pat, self.ueIpBase))[0]
         ip = "{0}{1}".format (base, str (self.nextAddr))
         self.nextAddr += 1
         return ip
@@ -552,7 +560,7 @@ class LteCluster (object):
             self.node.cmd ('ip route add default via {0}'.format (self.ueGwIpAddr))
             self.node.cmd ('arp -s {0} 00:00:00:00:00:00'.format (self.ueGwIpAddr))
             pat = '[0-9]*\.'
-            route = (findall (pat, self.ueIp))[0] + '0.0.0'
+            route = (re.findall (pat, self.ueIp))[0] + '0.0.0'
             self.node.cmd ('ip route del {0}/8'.format (route))
 
         def cmd (self, *args, **kwargs):
