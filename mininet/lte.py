@@ -425,6 +425,7 @@ class LteCluster (object):
         ueIp = self.allocateIp ()
         tbIntf = self.TapBridgeIntf (intfName, node, port, self.ueGwIpAddr, ueIp, self.epcSwitch, self.csock)
         self.tapBridgeIntfs.append (tbIntf)
+        return ueIp
 
     def allocateIp (self):
         pat = '[0-9]*\.[0-9]*\.[0-9]*\.'

@@ -66,6 +66,14 @@ class Cleanup( object ):
         info( "*** Removing junk from /tmp\n" )
         sh( 'rm -f /tmp/vconn* /tmp/vlogs* /tmp/*.out /tmp/*.log' )
 
+	info( "*** Stop daemon\n" )
+	try:
+	    pid = co (['cat', '/tmp/opennet-daemon.pid'])
+	except CalledProcessError:
+	    pid = ''
+	if pid != '':
+	    sh ( 'opennet-daemon.py stop' )
+
         info( "*** Removing old X11 tunnels\n" )
         cleanUpScreens()
 
