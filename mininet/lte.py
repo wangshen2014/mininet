@@ -292,20 +292,33 @@ class LteCluster (object):
         self.csock.sendall (cmd)
         cmd = 'nUesPerEnb = {0}\n'.format (str (nUesPerEnb))
         self.csock.sendall (cmd)
+        #cmd = 'attachDelay = 10.0\n'
         cmd = 'attachDelay = 10.0\n'
         self.csock.sendall (cmd)
         cmd = 'distance = {0}\n'.format (str (distance))
         self.csock.sendall (cmd)
 
-        cmd = 'LogComponentEnable ("TapEpcHelper", LOG_LEVEL_ALL)\n'
+        #cmd = 'LogComponentEnable ("TapEpcHelper", LOG_LEVEL_ALL)\n'
+        #self.csock.sendall (cmd)
+        #cmd = 'LogComponentEnable ("EpcSgwPgwApplication", LOG_LEVEL_ALL)\n'
+        #self.csock.sendall (cmd)
+        cmd = 'LogComponentEnable ("LteEnbRrc", LOG_LEVEL_ALL)\n'
         self.csock.sendall (cmd)
-        cmd = 'LogComponentEnable ("EpcSgwPgwApplication", LOG_LEVEL_ALL)\n'
-        self.csock.sendall (cmd)
+        #cmd = 'LogComponentEnable ("RealtimeSimulatorImpl", LOG_LEVEL_ALL)\n'
+        #self.csock.sendall (cmd)
 
+        #cmd = 'Config.SetDefault ("ns3::LteHelper::Scheduler", StringValue ("{0}"))\n'.format ("ns3::FdMtFfMacScheduler")
+        #self.csock.sendall (cmd)
         cmd = 'Config.SetDefault ("ns3::TapEpcHelper::Mode", StringValue ("{0}"))\n'.format (str (mode))
         self.csock.sendall (cmd)
         cmd = 'Config.SetDefault ("ns3::LteEnbPhy::TxPower", DoubleValue ({0}))\n'.format (str (homeEnbTxPower))
         self.csock.sendall (cmd)
+
+        #cmd = 'Config.SetDefault ("ns3::LteEnbNetDevice::UlBandwidth", UintegerValue ({0}))\n'.format (100)
+        #self.csock.sendall (cmd)
+        #cmd = 'Config.SetDefault ("ns3::LteEnbNetDevice::DlBandwidth", UintegerValue ({0}))\n'.format (100)
+        #self.csock.sendall (cmd)
+
         cmd = 'LteTimeDilationFactor.SetTimeDilationFactor ({0})\n'.format (str (tdf))
         self.csock.sendall (cmd)
         
@@ -346,6 +359,13 @@ class LteCluster (object):
             self.csock.sendall (cmd)
             cmd = 'pgwIpIfaces = ipv4Helper.Assign (pgwDevice)\n'
             self.csock.sendall (cmd)
+
+            # cmd = 'ipv4 = pgw.GetObject (Ipv4.GetTypeId ())\n'
+            # self.csock.sendall (cmd)
+            # cmd = 'ipv4Static = Ipv4StaticRoutingHelper ().GetStaticRouting (ipv4)\n'
+            # self.csock.sendall (cmd)
+            # cmd = 'ipv4Static.SetDefaultRoute (Ipv4Address ("{0}"), 3)\n'.format ("1.0.0.1")
+            # self.csock.sendall (cmd)
 
         cmd = 'positionAlloc = ListPositionAllocator ()\n'
         self.csock.sendall (cmd)
