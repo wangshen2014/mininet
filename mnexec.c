@@ -24,6 +24,7 @@
 #include <sched.h>
 #include <ctype.h>
 #include <sys/mount.h>
+#include "syscall_wrapper.h"
 
 #if !defined(VERSION)
 #define VERSION "(devel)"
@@ -99,10 +100,11 @@ int main(int argc, char *argv[])
     char path[PATH_MAX];
     int nsid;
     int pid;
+    int tdf;
     char *cwd = get_current_dir_name();
 
     static struct sched_param sp;
-    while ((c = getopt(argc, argv, "+cdnpa:g:r:vh")) != -1)
+    while ((c = getopt(argc, argv, "+cdn:pa:g:r:vh")) != -1)
         switch(c) {
         case 'c':
             /* close file descriptors except stdin/out/error */
@@ -126,7 +128,8 @@ int main(int argc, char *argv[])
             break;
         case 'n':
             /* run in network and mount namespaces */
-            if (unshare(CLONE_NEWNET|CLONE_NEWNS) == -1) {
+            tdf = atoi (optarg);
+            if (virtualtimeunshare(CLONE_NEWNET|CLONE_NEWNS, tdf) == -1) {
                 perror("unshare");
                 return 1;
             }
