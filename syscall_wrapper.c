@@ -1,6 +1,6 @@
+#include "syscall_wrapper.h"
 #include <unistd.h>
 #include <sys/syscall.h>
-#include <sys/time.h>
 /*
  * hard coded number from syscall_64.tbl
  */
