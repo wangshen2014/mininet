@@ -7,7 +7,6 @@
  *	Think of it as a part of glibc
  */
 
-// int timeclone(unsigned long, unsigned long, int*, int, int*);
 int virtualtimeunshare(unsigned long, int);
 int getvirtualtimeofday(struct timeval *, struct timezone *);
 int gettimeofday(struct timeval *, struct timezone *);

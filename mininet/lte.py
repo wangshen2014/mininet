@@ -17,14 +17,6 @@ from ns.mobility import *
 from ns.fd_net_device import *
 from ns.tap_bridge import *
 
-GlobalValue.Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"))
-GlobalValue.Bind ("ChecksumEnabled", BooleanValue (True))
-
-Config.SetDefault ("ns3::LteSpectrumPhy::CtrlErrorModelEnabled", BooleanValue (False))
-Config.SetDefault ("ns3::LteSpectrumPhy::DataErrorModelEnabled", BooleanValue (False))
-
-Config.SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue (1072))
-
 class Lte (object):
     def __init__ (self, nEnbs=2, nUesPerEnb=1, distance=1000.0, tdf=1,
                   mode='Master', imsiBase=0, cellIdBase=0,
@@ -52,6 +44,14 @@ class Lte (object):
         else:
             error ('*** error: mode should be Master or Slave.\n')
             return
+
+        GlobalValue.Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"))
+        GlobalValue.Bind ("ChecksumEnabled", BooleanValue (True))
+
+        Config.SetDefault ("ns3::LteSpectrumPhy::CtrlErrorModelEnabled", BooleanValue (False))
+        Config.SetDefault ("ns3::LteSpectrumPhy::DataErrorModelEnabled", BooleanValue (False))
+
+        Config.SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue (1072))
 
         Config.SetDefault ("ns3::TapEpcHelper::Mode", StringValue (mode))
         Config.SetDefault ("ns3::LteEnbPhy::TxPower", DoubleValue (homeEnbTxPower))
@@ -307,23 +307,38 @@ class LteCluster (object):
         #cmd = 'LogComponentEnable ("RealtimeSimulatorImpl", LOG_LEVEL_ALL)\n'
         #self.csock.sendall (cmd)
 
-        #cmd = 'Config.SetDefault ("ns3::LteHelper::Scheduler", StringValue ("{0}"))\n'.format ("ns3::FdMtFfMacScheduler")
-        #self.csock.sendall (cmd)
-        cmd = 'Config.SetDefault ("ns3::TapEpcHelper::Mode", StringValue ("{0}"))\n'.format (str (mode))
+        cmd = 'GlobalValue.Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"))\n'
         self.csock.sendall (cmd)
-        cmd = 'Config.SetDefault ("ns3::LteEnbPhy::TxPower", DoubleValue ({0}))\n'.format (str (homeEnbTxPower))
+        cmd = 'GlobalValue.Bind ("ChecksumEnabled", BooleanValue (True))\n'
         self.csock.sendall (cmd)
 
-        #cmd = 'Config.SetDefault ("ns3::LteEnbNetDevice::UlBandwidth", UintegerValue ({0}))\n'.format (100)
-        #self.csock.sendall (cmd)
-        #cmd = 'Config.SetDefault ("ns3::LteEnbNetDevice::DlBandwidth", UintegerValue ({0}))\n'.format (100)
-        #self.csock.sendall (cmd)
+        cmd = 'Config.SetDefault ("ns3::LteSpectrumPhy::CtrlErrorModelEnabled", BooleanValue (False))\n'
+        self.csock.sendall (cmd)
+        cmd = 'Config.SetDefault ("ns3::LteSpectrumPhy::DataErrorModelEnabled", BooleanValue (False))\n'
+        self.csock.sendall (cmd)
 
-        cmd = 'LteTimeDilationFactor.SetTimeDilationFactor ({0})\n'.format (str (tdf))
+        cmd = 'Config.SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue (1072))\n'
+        self.csock.sendall (cmd)
+
+        cmd = 'Config.SetDefault ("ns3::LteHelper::Scheduler", StringValue ("ns3::FdMtFfMacScheduler"))\n'
+        self.csock.sendall (cmd)
+        cmd = 'Config.SetDefault ("ns3::TapEpcHelper::Mode", StringValue ("{0}"))\n'.format (mode)
+        self.csock.sendall (cmd)
+        cmd = 'Config.SetDefault ("ns3::LteEnbPhy::TxPower", DoubleValue ({0}))\n'.format (homeEnbTxPower)
+        self.csock.sendall (cmd)
+        cmd = 'Config.SetDefault ("ns3::LteEnbRrc::DefaultTransmissionMode", UintegerValue (2))\n'
+        self.csock.sendall (cmd)
+
+        cmd = 'Config.SetDefault ("ns3::LteEnbNetDevice::UlBandwidth", UintegerValue ({0}))\n'.format (100)
+        self.csock.sendall (cmd)
+        cmd = 'Config.SetDefault ("ns3::LteEnbNetDevice::DlBandwidth", UintegerValue ({0}))\n'.format (100)
+        self.csock.sendall (cmd)
+
+        cmd = 'LteTimeDilationFactor.SetTimeDilationFactor ({0})\n'.format (tdf)
         self.csock.sendall (cmd)
         
         if logFile != None:
-            cmd = 'Config.SetDefault ("ns3::TapEpcHelper::LogFile", StringValue ("{0}"))\n'.format (str (logFile))
+            cmd = 'Config.SetDefault ("ns3::TapEpcHelper::LogFile", StringValue ("{0}"))\n'.format (logFile)
             self.csock.sendall (cmd)
 
         cmd = 'lteHelper = LteHelper ()\n'
