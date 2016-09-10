@@ -67,12 +67,9 @@ class Cleanup( object ):
         sh( 'rm -f /tmp/vconn* /tmp/vlogs* /tmp/*.out /tmp/*.log' )
 
 	info( "*** Stop daemon\n" )
-	try:
-	    pid = co (['cat', '/tmp/opennet-daemon.pid'])
-	except CalledProcessError:
-	    pid = ''
-	if pid != '':
-	    sh ( 'opennet-daemon.py stop' )
+	sh ( 'opennet-daemon.py stop' )
+        sh ( 'pkill opennet-daemon.py' )
+        sh ( 'rm -f /tmp/opennet-daemon.pid' )
 
         info( "*** Removing old X11 tunnels\n" )
         cleanUpScreens()

@@ -298,14 +298,16 @@ class LteCluster (object):
         cmd = 'distance = {0}\n'.format (str (distance))
         self.csock.sendall (cmd)
 
-        #cmd = 'LogComponentEnable ("TapEpcHelper", LOG_LEVEL_ALL)\n'
-        #self.csock.sendall (cmd)
-        #cmd = 'LogComponentEnable ("EpcSgwPgwApplication", LOG_LEVEL_ALL)\n'
-        #self.csock.sendall (cmd)
-        cmd = 'LogComponentEnable ("LteEnbRrc", LOG_LEVEL_ALL)\n'
+        cmd = 'LogComponentEnable ("TapEpcHelper", LOG_LEVEL_ALL)\n'
         self.csock.sendall (cmd)
-        #cmd = 'LogComponentEnable ("RealtimeSimulatorImpl", LOG_LEVEL_ALL)\n'
-        #self.csock.sendall (cmd)
+        cmd = 'LogComponentEnable ("TapEpcMme", LOG_LEVEL_ALL)\n'
+        self.csock.sendall (cmd)
+        cmd = 'LogComponentEnable ("EpcSgwPgwApplication", LOG_LEVEL_ALL)\n'
+        self.csock.sendall (cmd)
+        cmd = 'LogComponentEnable ("FdNetDevice", LOG_LEVEL_DEBUG)\n'
+        self.csock.sendall (cmd)
+        cmd = 'LogComponentEnable ("TeidDscpMapping", LOG_LEVEL_LOGIC)\n'
+        self.csock.sendall (cmd)
 
         cmd = 'GlobalValue.Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"))\n'
         self.csock.sendall (cmd)
@@ -404,22 +406,24 @@ class LteCluster (object):
         cmd = 'internetStack.SetIpv6StackInstall (False)\n'
         self.csock.sendall (cmd)
 
-        cmd = 'def run (attachDelay, lteHelper, ueLteDevs):\n'
-        cmd += '    Simulator.Schedule (Seconds (attachDelay), LteHelper.Attach, lteHelper, ueLteDevs)\n'
+        cmd = 'Simulator.Schedule (Seconds (attachDelay), LteHelper.Attach, lteHelper, ueLteDevs)\n'
+        self.csock.sendall (cmd)
+
+        cmd = 'def run ():\n'
         cmd += '    Simulator.Stop (Seconds (86400))\n'
         cmd += '    Simulator.Run ()\n'
         self.csock.sendall (cmd)
 
-        cmd = 'nsThread = Thread (target = run, args = (attachDelay, lteHelper, ueLteDevs))\n'
+        cmd = 'nsThread = Thread (target = run)\n'
         self.csock.sendall (cmd)
         cmd = 'tapBridges = []\n'
         self.csock.sendall (cmd)
 
     def startDeamon (self):
-        self.epcSwitch.cmd ("python /usr/bin/opennet-daemon.py start")
+        self.epcSwitch.cmd ("/usr/bin/opennet-daemon.py start")
 
     def stopDeamon (self):
-        self.epcSwitch.cmd ("python /usr/bin/opennet-daemon.py stop")
+        self.epcSwitch.cmd ("/usr/bin/opennet-daemon.py stop")
 
     def connectDaemon (self, ip, port):
         csock = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
@@ -465,10 +469,35 @@ class LteCluster (object):
         cmd = 'gatewayMacAddr = tapEpcHelper.GetUeDefaultGatewayMacAddress ()\n'
         self.csock.sendall (cmd)
 
+        self.addEpsBearer (localPortStart=3000, localPortEnd=3999, qci='EpsBearer.NGBR_IMS')
+        self.addEpsBearer (remotePortStart=3000, remotePortEnd=3999, qci='EpsBearer.NGBR_IMS')
+        self.addEpsBearer (localPortStart=4000, localPortEnd=4999, qci='EpsBearer.GBR_CONV_VOICE')
+        self.addEpsBearer (remotePortStart=4000, remotePortEnd=4999, qci='EpsBearer.GBR_CONV_VOICE')
+
         ueIp = self.allocateIp ()
         tbIntf = self.TapBridgeIntf (intfName, node, port, self.ueGwIpAddr, ueIp, self.epcSwitch, self.csock)
         self.tapBridgeIntfs.append (tbIntf)
         return ueIp
+
+    def addEpsBearer (self, localPortStart=0, localPortEnd=65535, remotePortStart=0, remotePortEnd=65535, qci='EpsBearer.NGBR_VIDEO_TCP_DEFAULT'):
+        cmd = 'tft = EpcTft ()\n'
+        self.csock.sendall (cmd)
+        cmd = 'pf = EpcTft.PacketFilter ()\n'
+        self.csock.sendall (cmd)
+        cmd = 'pf.localPortStart = {0}\n'.format (localPortStart)
+        self.csock.sendall (cmd)
+        cmd = 'pf.localPortEnd = {0}\n'.format (localPortEnd)
+        self.csock.sendall (cmd)
+        cmd = 'pf.remotePortStart = {0}\n'.format (remotePortStart)
+        self.csock.sendall (cmd)
+        cmd = 'pf.remotePortEnd = {0}\n'.format (remotePortEnd)
+        self.csock.sendall (cmd)
+        cmd = 'tft.Add (pf)\n'
+        self.csock.sendall (cmd)
+        cmd = 'bearer = EpsBearer ({0})\n'.format (qci)
+        self.csock.sendall (cmd)
+        cmd = 'Simulator.Schedule (Seconds (attachDelay + 1), LteHelper.ActivateDedicatedEpsBearer, lteHelper, ueLteDev, bearer, tft)\n'
+        self.csock.sendall (cmd)
 
     def allocateIp (self):
         pat = '[0-9]*\.[0-9]*\.[0-9]*\.'
