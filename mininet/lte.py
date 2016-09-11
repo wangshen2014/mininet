@@ -320,7 +320,7 @@ class LteCluster (object):
         cmd = 'Config.SetDefault ("ns3::LteSpectrumPhy::DataErrorModelEnabled", BooleanValue (False))\n'
         self.csock.sendall (cmd)
 
-        cmd = 'Config.SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue (1220))\n'
+        cmd = 'Config.SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue (2440))\n'
         self.csock.sendall (cmd)
 
         cmd = 'Config.SetDefault ("ns3::LteHelper::Scheduler", StringValue ("ns3::FdMtFfMacScheduler"))\n'
