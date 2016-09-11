@@ -308,6 +308,8 @@ class LteCluster (object):
         self.csock.sendall (cmd)
         cmd = 'LogComponentEnable ("TeidDscpMapping", LOG_LEVEL_LOGIC)\n'
         self.csock.sendall (cmd)
+        cmd = 'LogComponentEnable ("TapEpcEnbApplication", LOG_LEVEL_ALL)\n'
+        self.csock.sendall (cmd)
 
         cmd = 'GlobalValue.Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"))\n'
         self.csock.sendall (cmd)
@@ -496,7 +498,7 @@ class LteCluster (object):
         self.csock.sendall (cmd)
         cmd = 'bearer = EpsBearer ({0})\n'.format (qci)
         self.csock.sendall (cmd)
-        cmd = 'Simulator.Schedule (Seconds (attachDelay + 1), LteHelper.ActivateDedicatedEpsBearer, lteHelper, ueLteDev, bearer, tft)\n'
+        cmd = 'Simulator.Schedule (Seconds (attachDelay), LteHelper.ActivateDedicatedEpsBearer, lteHelper, ueLteDev, bearer, tft)\n'
         self.csock.sendall (cmd)
 
     def allocateIp (self):
