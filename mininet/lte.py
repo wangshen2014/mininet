@@ -292,7 +292,6 @@ class LteCluster (object):
         self.csock.sendall (cmd)
         cmd = 'nUesPerEnb = {0}\n'.format (str (nUesPerEnb))
         self.csock.sendall (cmd)
-        #cmd = 'attachDelay = 10.0\n'
         cmd = 'attachDelay = 10.0\n'
         self.csock.sendall (cmd)
         cmd = 'distance = {0}\n'.format (str (distance))
@@ -321,7 +320,7 @@ class LteCluster (object):
         cmd = 'Config.SetDefault ("ns3::LteSpectrumPhy::DataErrorModelEnabled", BooleanValue (False))\n'
         self.csock.sendall (cmd)
 
-        cmd = 'Config.SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue (1072))\n'
+        cmd = 'Config.SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue (1220))\n'
         self.csock.sendall (cmd)
 
         cmd = 'Config.SetDefault ("ns3::LteHelper::Scheduler", StringValue ("ns3::FdMtFfMacScheduler"))\n'

@@ -68,7 +68,7 @@ class Cleanup( object ):
 
 	info( "*** Stop daemon\n" )
 	sh ( 'opennet-daemon.py stop' )
-        sh ( 'pkill opennet-daemon.py' )
+        sh ( 'pkill opennet-daemon' )
         sh ( 'rm -f /tmp/opennet-daemon.pid' )
 
         info( "*** Removing old X11 tunnels\n" )
