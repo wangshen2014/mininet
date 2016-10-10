@@ -46,7 +46,6 @@ void usage(char *name)
            name);
 }
 
-
 int setns(int fd, int nstype)
 {
     return syscall(__NR_setns, fd, nstype);
@@ -100,11 +99,18 @@ int main(int argc, char *argv[])
     char path[PATH_MAX];
     int nsid;
     int pid;
-    int tdf;
     char *cwd = get_current_dir_name();
 
+#ifdef VIRTUAL_TIME
+    int tdf;
+#endif
+
     static struct sched_param sp;
+#ifdef VIRTUAL_TIME
     while ((c = getopt(argc, argv, "+cdn:pa:g:r:vh")) != -1)
+#else
+    while ((c = getopt(argc, argv, "+cdnpa:g:r:vh")) != -1)
+#endif
         switch(c) {
         case 'c':
             /* close file descriptors except stdin/out/error */
@@ -128,11 +134,18 @@ int main(int argc, char *argv[])
             break;
         case 'n':
             /* run in network and mount namespaces */
+#ifdef VIRTUAL_TIME
             tdf = atoi (optarg);
             if (virtualtimeunshare(CLONE_NEWNET|CLONE_NEWNS, tdf) == -1) {
+                perror("virtualtimeunshare");
+                return 1;
+            }
+#else
+            if (unshare(CLONE_NEWNET|CLONE_NEWNS) == -1) {
                 perror("unshare");
                 return 1;
             }
+#endif
             /* mount sysfs to pick up the new network namespace */
             if (mount("sysfs", "/sys", "sysfs", MS_MGC_VAL, NULL) == -1) {
                 perror("mount");
