@@ -11,8 +11,12 @@ BINDIR = /usr/bin
 MANDIR = /usr/share/man/man1
 DOCDIRS = doc/html doc/latex
 PDF = doc/latex/refman.pdf
+UNAME_R := $(shell uname -r)
 
 CFLAGS += -Wall -Wextra
+ifeq ($(UNAME_R), 3.16.3)
+	CFLAGS += -D VIRTUAL_TIME
+endif
 
 all: codecheck test
 
