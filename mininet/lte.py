@@ -43,7 +43,9 @@ class Lte (object):
         self.tapBridgeIntfs = []
 
         self.startAgent ()
-        self.csock = self.connectAgent (serverIp, port)
+        self.csock = None
+        while self.csock == None:
+            self.csock = self.connectAgent (serverIp, port)
 
         if mode == 'Master':
             self.addEpcEntity (self.epcSwitch, 'pgwTap')
@@ -208,8 +210,12 @@ class Lte (object):
 
     def connectAgent (self, ip, port):
         csock = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
-        csock.connect ((ip, port))
-        return csock
+        try:
+            csock.connect ((ip, port))
+        except socket.error, exc:
+            return None
+        else:
+            return csock
 
     def addEpcEntity (self, node, intfName):
         port = node.newPort ()
