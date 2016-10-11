@@ -54,6 +54,7 @@ mnexec: mnexec.c $(MN) mininet/net.py syscall_wrapper.o
 
 install: $(MNEXEC) $(MANPAGES)
 	install $(MNEXEC) $(BINDIR)
+	install bin/opennet-agent.py $(BINDIR)
 	install $(MANPAGES) $(MANDIR)
 	python setup.py install
 

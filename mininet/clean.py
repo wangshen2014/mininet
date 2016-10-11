@@ -66,10 +66,10 @@ class Cleanup( object ):
         info( "*** Removing junk from /tmp\n" )
         sh( 'rm -f /tmp/vconn* /tmp/vlogs* /tmp/*.out /tmp/*.log' )
 
-	info( "*** Stop daemon\n" )
-	sh ( 'opennet-daemon.py stop' )
-        sh ( 'pkill opennet-daemon' )
-        sh ( 'rm -f /tmp/opennet-daemon.pid' )
+	info( "*** Stop opennet-agent\n" )
+	sh ( 'opennet-agent.py stop' )
+        sh ( 'pkill opennet-agent' )
+        sh ( 'rm -f /tmp/opennet-agent.pid' )
 
         info( "*** Removing old X11 tunnels\n" )
         cleanUpScreens()
