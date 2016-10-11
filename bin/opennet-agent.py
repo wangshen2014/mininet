@@ -141,7 +141,7 @@ class Daemon:
         """
         pass
 
-class OpenNetDaemon(Daemon):
+class OpenNetAgent(Daemon):
     def run (self):
         msock = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
         msock.setsockopt (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -153,8 +153,8 @@ class OpenNetDaemon(Daemon):
             p.start ()
 
     def clientHandler (self, csock):
-        sys.stdout = open ('/tmp/opennet-daemon.out', 'a')
-        sys.stderr = open ('/tmp/opennet-daemon.err', 'a')
+        sys.stdout = open ('/tmp/opennet-agent.out', 'a')
+        sys.stderr = open ('/tmp/opennet-agent.err', 'a')
         while True:
             data = csock.recv (4096)
             print str (datetime.now ())
@@ -168,7 +168,7 @@ class OpenNetDaemon(Daemon):
         csock.close ()
 
 if __name__ == "__main__":
-    daemon = OpenNetDaemon('/tmp/opennet-daemon.pid')
+    daemon = OpenNetAgent('/tmp/opennet-agent.pid')
     if len(sys.argv) == 2:
         if 'start' == sys.argv[1]:
             daemon.start()
