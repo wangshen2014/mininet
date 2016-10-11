@@ -55,12 +55,10 @@ class Lte (object):
             self.nextAddr = 2
 
         elif mode == 'Slave':
-            cmd = 'Config.SetDefault ("ns3::TapEpcHelper::EpcSlaveDeviceName", StringValue ("{0}"))\n'.format (str (slaveName))
-            self.csock.sendall (cmd)
             IpBase = re.sub (r'[0-9]*\.([0-9]*\.[0-9]*\.[0-9])', r'0.\1', ueIpBase)
-            cmd = 'Config.SetDefault ("ns3::TapEpcHelper::SlaveUeIpAddressBase", StringValue ("{0}"))\n'.format (str (IpBase))
-            self.csock.sendall (cmd)
-            cmd = 'Config.SetDefault ("ns3::TapEpcHelper::SlaveIpAddressBase", StringValue ("{0}"))\n'.format (str (IpBase))
+            cmd = 'Config.SetDefault ("ns3::TapEpcHelper::EpcSlaveDeviceName", StringValue ("{0}"))\n'.format (str (slaveName))
+            cmd += 'Config.SetDefault ("ns3::TapEpcHelper::SlaveUeIpAddressBase", StringValue ("{0}"))\n'.format (str (IpBase))
+            cmd += 'Config.SetDefault ("ns3::TapEpcHelper::SlaveIpAddressBase", StringValue ("{0}"))\n'.format (str (IpBase))
             self.csock.sendall (cmd)
             self.addEpcEntity (self.epcSwitch, slaveName)
             self.nextAddr = 1
@@ -71,52 +69,36 @@ class Lte (object):
             return
 
         cmd = 'nEnbs = {0}\n'.format (str (nEnbs))
-        self.csock.sendall (cmd)
-        cmd = 'nUesPerEnb = {0}\n'.format (str (nUesPerEnb))
-        self.csock.sendall (cmd)
-        cmd = 'attachDelay = 10.0\n'
-        self.csock.sendall (cmd)
-        cmd = 'distance = {0}\n'.format (str (distance))
+        cmd += 'nUesPerEnb = {0}\n'.format (str (nUesPerEnb))
+        cmd += 'attachDelay = 10.0\n'
+        cmd += 'distance = {0}\n'.format (str (distance))
         self.csock.sendall (cmd)
 
         cmd = 'LogComponentEnable ("TapEpcHelper", LOG_LEVEL_ALL)\n'
-        self.csock.sendall (cmd)
-        cmd = 'LogComponentEnable ("TapEpcMme", LOG_LEVEL_ALL)\n'
-        self.csock.sendall (cmd)
-        cmd = 'LogComponentEnable ("EpcSgwPgwApplication", LOG_LEVEL_ALL)\n'
-        self.csock.sendall (cmd)
-        cmd = 'LogComponentEnable ("FdNetDevice", LOG_LEVEL_DEBUG)\n'
-        self.csock.sendall (cmd)
-        cmd = 'LogComponentEnable ("TeidDscpMapping", LOG_LEVEL_LOGIC)\n'
-        self.csock.sendall (cmd)
-        cmd = 'LogComponentEnable ("TapEpcEnbApplication", LOG_LEVEL_ALL)\n'
+        cmd += 'LogComponentEnable ("TapEpcMme", LOG_LEVEL_ALL)\n'
+        cmd += 'LogComponentEnable ("EpcSgwPgwApplication", LOG_LEVEL_ALL)\n'
+        cmd += 'LogComponentEnable ("FdNetDevice", LOG_LEVEL_DEBUG)\n'
+        cmd += 'LogComponentEnable ("TeidDscpMapping", LOG_LEVEL_LOGIC)\n'
+        cmd += 'LogComponentEnable ("TapEpcEnbApplication", LOG_LEVEL_ALL)\n'
         self.csock.sendall (cmd)
 
         cmd = 'GlobalValue.Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"))\n'
-        self.csock.sendall (cmd)
-        cmd = 'GlobalValue.Bind ("ChecksumEnabled", BooleanValue (True))\n'
+        cmd += 'GlobalValue.Bind ("ChecksumEnabled", BooleanValue (True))\n'
         self.csock.sendall (cmd)
 
         cmd = 'Config.SetDefault ("ns3::LteSpectrumPhy::CtrlErrorModelEnabled", BooleanValue (False))\n'
-        self.csock.sendall (cmd)
-        cmd = 'Config.SetDefault ("ns3::LteSpectrumPhy::DataErrorModelEnabled", BooleanValue (False))\n'
-        self.csock.sendall (cmd)
-
-        cmd = 'Config.SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue (2440))\n'
+        cmd += 'Config.SetDefault ("ns3::LteSpectrumPhy::DataErrorModelEnabled", BooleanValue (False))\n'
+        cmd += 'Config.SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue (2440))\n'
         self.csock.sendall (cmd)
 
         cmd = 'Config.SetDefault ("ns3::LteHelper::Scheduler", StringValue ("ns3::FdMtFfMacScheduler"))\n'
-        self.csock.sendall (cmd)
-        cmd = 'Config.SetDefault ("ns3::TapEpcHelper::Mode", StringValue ("{0}"))\n'.format (mode)
-        self.csock.sendall (cmd)
-        cmd = 'Config.SetDefault ("ns3::LteEnbPhy::TxPower", DoubleValue ({0}))\n'.format (homeEnbTxPower)
-        self.csock.sendall (cmd)
-        cmd = 'Config.SetDefault ("ns3::LteEnbRrc::DefaultTransmissionMode", UintegerValue (2))\n'
+        cmd += 'Config.SetDefault ("ns3::TapEpcHelper::Mode", StringValue ("{0}"))\n'.format (mode)
+        cmd += 'Config.SetDefault ("ns3::LteEnbPhy::TxPower", DoubleValue ({0}))\n'.format (homeEnbTxPower)
+        cmd += 'Config.SetDefault ("ns3::LteEnbRrc::DefaultTransmissionMode", UintegerValue (2))\n'
         self.csock.sendall (cmd)
 
         cmd = 'Config.SetDefault ("ns3::LteEnbNetDevice::UlBandwidth", UintegerValue ({0}))\n'.format (100)
-        self.csock.sendall (cmd)
-        cmd = 'Config.SetDefault ("ns3::LteEnbNetDevice::DlBandwidth", UintegerValue ({0}))\n'.format (100)
+        cmd += 'Config.SetDefault ("ns3::LteEnbNetDevice::DlBandwidth", UintegerValue ({0}))\n'.format (100)
         self.csock.sendall (cmd)
 
         cmd = 'LteTimeDilationFactor.SetTimeDilationFactor ({0})\n'.format (tdf)
@@ -127,17 +109,13 @@ class Lte (object):
             self.csock.sendall (cmd)
 
         cmd = 'lteHelper = LteHelper ()\n'
-        self.csock.sendall (cmd)
-        cmd = 'lteHelper.SetImsiCounter ({0})\n'.format (str (imsiBase))
-        self.csock.sendall (cmd)
-        cmd = 'lteHelper.SetCellIdCounter ({0})\n'.format (str (cellIdBase))
+        cmd += 'lteHelper.SetImsiCounter ({0})\n'.format (str (imsiBase))
+        cmd += 'lteHelper.SetCellIdCounter ({0})\n'.format (str (cellIdBase))
         self.csock.sendall (cmd)
 
         cmd = 'tapEpcHelper = TapEpcHelper ()\n'
-        self.csock.sendall (cmd)
-        cmd = 'lteHelper.SetEpcHelper (tapEpcHelper)\n'
-        self.csock.sendall (cmd)
-        cmd = 'tapEpcHelper.Initialize ()\n'
+        cmd += 'lteHelper.SetEpcHelper (tapEpcHelper)\n'
+        cmd += 'tapEpcHelper.Initialize ()\n'
         self.csock.sendall (cmd)
 
         if mode == 'Master':
@@ -145,19 +123,14 @@ class Lte (object):
             self.csock.sendall (cmd)
 
             cmd = 'tap = TapFdNetDeviceHelper ()\n'
-            self.csock.sendall (cmd)
-            cmd = 'tap.SetDeviceName ("pgwTap")\n'
-            self.csock.sendall (cmd)
-            cmd = 'tap.SetTapMacAddress (Mac48Address.Allocate ())\n'
-            self.csock.sendall (cmd)
-            cmd = 'pgwDevice = tap.Install (pgw)\n'
+            cmd += 'tap.SetDeviceName ("pgwTap")\n'
+            cmd += 'tap.SetTapMacAddress (Mac48Address.Allocate ())\n'
+            cmd += 'pgwDevice = tap.Install (pgw)\n'
             self.csock.sendall (cmd)
 
             cmd = 'ipv4Helper = Ipv4AddressHelper ()\n'
-            self.csock.sendall (cmd)
-            cmd = 'ipv4Helper.SetBase (Ipv4Address ("{0}"), Ipv4Mask ("{1}"))\n'.format (str (pgwIpBase), str (pgwMask))
-            self.csock.sendall (cmd)
-            cmd = 'pgwIpIfaces = ipv4Helper.Assign (pgwDevice)\n'
+            cmd += 'ipv4Helper.SetBase (Ipv4Address ("{0}"), Ipv4Mask ("{1}"))\n'.format (str (pgwIpBase), str (pgwMask))
+            cmd += 'pgwIpIfaces = ipv4Helper.Assign (pgwDevice)\n'
             self.csock.sendall (cmd)
 
             # cmd = 'ipv4 = pgw.GetObject (Ipv4.GetTypeId ())\n'
@@ -168,25 +141,20 @@ class Lte (object):
             # self.csock.sendall (cmd)
 
         cmd = 'positionAlloc = ListPositionAllocator ()\n'
-        self.csock.sendall (cmd)
-        cmd = 'for i in range (0, nEnbs):\n    positionAlloc.Add (Vector (distance * i, 0, 0))\n'
+        cmd += 'for i in range (0, nEnbs):\n    positionAlloc.Add (Vector (distance * i, 0, 0))\n'
         self.csock.sendall (cmd)
 
         cmd = 'mobility = MobilityHelper ()\n'
-        self.csock.sendall (cmd)
-        cmd = 'mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel")\n'
-        self.csock.sendall (cmd)
-        cmd = 'mobility.SetPositionAllocator (positionAlloc)\n'
+        cmd += 'mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel")\n'
+        cmd += 'mobility.SetPositionAllocator (positionAlloc)\n'
         self.csock.sendall (cmd)
 
         cmd = 'enbLteDevs = NetDeviceContainer ()\n'
-        self.csock.sendall (cmd)
-        cmd = 'ueLteDevs = NetDeviceContainer ()\n'
+        cmd += 'ueLteDevs = NetDeviceContainer ()\n'
         self.csock.sendall (cmd)
 
         cmd = 'internetStack = InternetStackHelper ()\n'
-        self.csock.sendall (cmd)
-        cmd = 'internetStack.SetIpv6StackInstall (False)\n'
+        cmd += 'internetStack.SetIpv6StackInstall (False)\n'
         self.csock.sendall (cmd)
 
         cmd = 'Simulator.Schedule (Seconds (attachDelay), LteHelper.Attach, lteHelper, ueLteDevs)\n'
@@ -198,8 +166,7 @@ class Lte (object):
         self.csock.sendall (cmd)
 
         cmd = 'nsThread = Thread (target = run)\n'
-        self.csock.sendall (cmd)
-        cmd = 'tapBridges = []\n'
+        cmd += 'tapBridges = []\n'
         self.csock.sendall (cmd)
 
     def startAgent (self):
@@ -226,12 +193,9 @@ class Lte (object):
         self.TapIntf (intfName, node, port)
 
         cmd = 'nsNode = Node ()\n'
-        self.csock.sendall (cmd)
-        cmd = 'mobility.Install (nsNode)\n'
-        self.csock.sendall (cmd)
-        cmd = 'enbLteDev = lteHelper.InstallEnbDevice (NodeContainer (nsNode))\n'
-        self.csock.sendall (cmd)
-        cmd = 'enbLteDevs.Add (enbLteDev)\n'
+        cmd += 'mobility.Install (nsNode)\n'
+        cmd += 'enbLteDev = lteHelper.InstallEnbDevice (NodeContainer (nsNode))\n'
+        cmd += 'enbLteDevs.Add (enbLteDev)\n'
         self.csock.sendall (cmd)
 
     def addUe (self, node):
@@ -240,17 +204,13 @@ class Lte (object):
         intfName = "{0}-eth{1}".format (node.name, port)
 
         cmd = 'nsNode = Node ()\n'
-        self.csock.sendall (cmd)
-        cmd = 'mobility.Install (nsNode)\n'
-        self.csock.sendall (cmd)
-        cmd = 'ueLteDev = lteHelper.InstallUeDevice (NodeContainer (nsNode))\n'
-        self.csock.sendall (cmd)
-        cmd = 'ueLteDevs.Add (ueLteDev)\n'
+        cmd += 'mobility.Install (nsNode)\n'
+        cmd += 'ueLteDev = lteHelper.InstallUeDevice (NodeContainer (nsNode))\n'
+        cmd += 'ueLteDevs.Add (ueLteDev)\n'
         self.csock.sendall (cmd)
 
         cmd = 'internetStack.Install (nsNode)\n'
-        self.csock.sendall (cmd)
-        cmd = 'tapEpcHelper.AssignUeIpv4Address (ueLteDev)\n'
+        cmd += 'tapEpcHelper.AssignUeIpv4Address (ueLteDev)\n'
         self.csock.sendall (cmd)
 
         cmd = 'gatewayMacAddr = tapEpcHelper.GetUeDefaultGatewayMacAddress ()\n'
@@ -268,22 +228,14 @@ class Lte (object):
 
     def addEpsBearer (self, localPortStart=0, localPortEnd=65535, remotePortStart=0, remotePortEnd=65535, qci='EpsBearer.NGBR_VIDEO_TCP_DEFAULT'):
         cmd = 'tft = EpcTft ()\n'
-        self.csock.sendall (cmd)
-        cmd = 'pf = EpcTft.PacketFilter ()\n'
-        self.csock.sendall (cmd)
-        cmd = 'pf.localPortStart = {0}\n'.format (localPortStart)
-        self.csock.sendall (cmd)
-        cmd = 'pf.localPortEnd = {0}\n'.format (localPortEnd)
-        self.csock.sendall (cmd)
-        cmd = 'pf.remotePortStart = {0}\n'.format (remotePortStart)
-        self.csock.sendall (cmd)
-        cmd = 'pf.remotePortEnd = {0}\n'.format (remotePortEnd)
-        self.csock.sendall (cmd)
-        cmd = 'tft.Add (pf)\n'
-        self.csock.sendall (cmd)
-        cmd = 'bearer = EpsBearer ({0})\n'.format (qci)
-        self.csock.sendall (cmd)
-        cmd = 'Simulator.Schedule (Seconds (attachDelay), LteHelper.ActivateDedicatedEpsBearer, lteHelper, ueLteDev, bearer, tft)\n'
+        cmd += 'pf = EpcTft.PacketFilter ()\n'
+        cmd += 'pf.localPortStart = {0}\n'.format (localPortStart)
+        cmd += 'pf.localPortEnd = {0}\n'.format (localPortEnd)
+        cmd += 'pf.remotePortStart = {0}\n'.format (remotePortStart)
+        cmd += 'pf.remotePortEnd = {0}\n'.format (remotePortEnd)
+        cmd += 'tft.Add (pf)\n'
+        cmd += 'bearer = EpsBearer ({0})\n'.format (qci)
+        cmd += 'Simulator.Schedule (Seconds (attachDelay), LteHelper.ActivateDedicatedEpsBearer, lteHelper, ueLteDev, bearer, tft)\n'
         self.csock.sendall (cmd)
 
     def allocateIp (self):
@@ -318,14 +270,12 @@ class Lte (object):
 
     def stop (self):
         cmd = 'Simulator.Stop (Seconds (1))\n'
-        self.csock.sendall (cmd)
-        cmd = 'while nsThread.isAlive ():\n    sleep (0.1)\n'
+        cmd += 'while nsThread.isAlive ():\n    sleep (0.1)\n'
         self.csock.sendall (cmd)
 
     def clear (self):
         cmd = 'Simulator.Destroy ()\n'
-        self.csock.sendall (cmd)
-        cmd = 'exit ()\n'
+        cmd += 'exit ()\n'
         self.csock.sendall (cmd)
         self.csock.close ()
         self.stopAgent ()
@@ -373,25 +323,17 @@ class Lte (object):
             self.csock.sendall (cmd)
 
             cmd = 'tapBridgeHelper = TapBridgeHelper ()\n'
-            self.csock.sendall (cmd)
-            cmd = 'tapBridgeHelper.SetAttribute ("Mode", StringValue ("ConfigureLocal"))\n'
-            self.csock.sendall (cmd)
-            cmd = 'tapBridgeHelper.SetAttribute ("DeviceName", StringValue ("{0}"))\n'.format (str (self.name))
-            self.csock.sendall (cmd)
-            cmd = 'macAddress = Mac48Address.Allocate ()\n'
-            self.csock.sendall (cmd)
-            cmd = 'tapBridgeHelper.SetAttribute ("MacAddress", Mac48AddressValue (macAddress))\n'
-            self.csock.sendall (cmd)
-            cmd = 'tb = tapBridgeHelper.Install (nsNode, nsDevice)\n'
-            self.csock.sendall (cmd)
-            cmd = 'tapBridges.append (tb)\n'
+            cmd += 'tapBridgeHelper.SetAttribute ("Mode", StringValue ("ConfigureLocal"))\n'
+            cmd += 'tapBridgeHelper.SetAttribute ("DeviceName", StringValue ("{0}"))\n'.format (str (self.name))
+            cmd += 'macAddress = Mac48Address.Allocate ()\n'
+            cmd += 'tapBridgeHelper.SetAttribute ("MacAddress", Mac48AddressValue (macAddress))\n'
+            cmd += 'tb = tapBridgeHelper.Install (nsNode, nsDevice)\n'
+            cmd += 'tapBridges.append (tb)\n'
             self.csock.sendall (cmd)
 
             cmd = 'dev = nsDevice.GetObject (LteUeNetDevice.GetTypeId ())\n'
-            self.csock.sendall (cmd)
-            cmd = 'dev.SetMacAddress (macAddress)\n'
-            self.csock.sendall (cmd)
-            cmd = 'dev.SetGatewayMacAddress (gatewayMacAddr)\n'
+            cmd += 'dev.SetMacAddress (macAddress)\n'
+            cmd += 'dev.SetGatewayMacAddress (gatewayMacAddr)\n'
             self.csock.sendall (cmd)
 
         def moveIntoNamespace (self):
