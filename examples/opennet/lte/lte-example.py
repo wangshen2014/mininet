@@ -20,19 +20,20 @@ def emulation ():
 
     # Use MininetCluster for cluster emulation of hosts and switches
     servers = ['master']
-    serverIP = {'master': '127.0.0.1'}
+    # Do not use 127.0.0.1
+    serverIP = {'master': '192.168.163.129'}
     net = MininetCluster (controller=None, user='root', servers=servers, serverIP=serverIP)
     switches = [None]
 
     # Add OpenFlow Switches (OVS)
     info ("*** Add OFS\n")
-    switch = net.addSwitch ("ofs1", failMode='secure', user='root', server='master', serverIP='127.0.0.1')
+    switch = net.addSwitch ("ofs1", failMode='secure', user='root', server='master', serverIP='192.168.163.129')
     switches.append (switch)
 
-    switch = net.addSwitch ("ofs2", failMode='secure', user='root', server='master', serverIP='127.0.0.1')
+    switch = net.addSwitch ("ofs2", failMode='secure', user='root', server='master', serverIP='192.168.163.129')
     switches.append (switch)
 
-    switch = net.addSwitch ("ofs3", failMode='secure', user='root', server='master', serverIP='127.0.0.1')
+    switch = net.addSwitch ("ofs3", failMode='secure', user='root', server='master', serverIP='192.168.163.129')
     switches.append (switch)
 
     info ("*** Add link between OFS\n")
@@ -59,7 +60,7 @@ def emulation ():
         # Reference mininet/lte.py for more detail of Lte class
         lte = Lte (nEnbs=ENB / CPU, nUesPerEnb=UE / ENB, tdf=TDF,
                    mode=MODE, epcSwitch=switches[1],
-                   server='master', serverIp='127.0.0.1',
+                   server='master', serverIp='192.168.163.129',
                    logFile=LOG, imsiBase=c * (UE / CPU),
                    cellIdBase=c * (ENB / CPU), ueIpBase=UE_IP_BASE, slaveName=SLAVE_DEVICE)
 
@@ -73,7 +74,7 @@ def emulation ():
         for i in range (c * (UE / CPU) + 1, (c + 1) * (UE / CPU) + 1):
             info ('h{0} '.format (i))
             # UE is combination of Mininet host and NS-3 node
-            host = net.addHost ("h{0}".format (i), user='root', server='master', serverIP='127.0.0.1', tdf=TDF)
+            host = net.addHost ("h{0}".format (i), user='root', server='master', serverIP='192.168.163.129', tdf=TDF)
             ueIP = lte.addUe (host)
             # Record IP address for further usage (depends on scenario)
             ueIpList.append (ueIP)
@@ -85,12 +86,29 @@ def emulation ():
     info ('*** net.start ()\n')
     net.start ()
 
+    # Setup DSCP matching flows in OFS1 and OFS2
+    switches[1].cmd ("ovs-ofctl add-flow ofs1 priority=0,actions=NORMAL")
+    switches[1].cmd ("ovs-ofctl add-flow ofs1 priority=1,ip_dscp=0x00,udp,udp_src=2152,udp_dst=2152,actions=NORMAL")
+    switches[1].cmd ("ovs-ofctl add-flow ofs1 priority=2,ip_dscp=0x1a,udp,udp_src=2152,udp_dst=2152,actions=NORMAL")
+    switches[1].cmd ("ovs-ofctl add-flow ofs1 priority=3,ip_dscp=0x2e,udp,udp_src=2152,udp_dst=2152,actions=NORMAL")
+
+    switches[2].cmd ("ovs-ofctl add-flow ofs2 priority=0,actions=NORMAL")
+    switches[2].cmd ("ovs-ofctl add-flow ofs2 priority=1,ip_dscp=0x00,udp,udp_src=2152,udp_dst=2152,actions=NORMAL")
+    switches[2].cmd ("ovs-ofctl add-flow ofs2 priority=2,ip_dscp=0x1a,udp,udp_src=2152,udp_dst=2152,actions=NORMAL")
+    switches[2].cmd ("ovs-ofctl add-flow ofs2 priority=3,ip_dscp=0x2e,udp,udp_src=2152,udp_dst=2152,actions=NORMAL")
+
     info ('*** lte.start ()\n')
     for lte in lteList:
         lte.start ()
 
     info ('*** Please wait for activation of EPS bearer...\n')
     call ( 'sleep 15', shell=True )
+
+    info ('*** Notification: GTP-U tunnel does not support ping\n')
+    # Emulation example: 
+    #  h1 iperf3 -s
+    #  h2 iperf3 -c h1 -M 1024 -R -t 3
+    #  or h2 iperf3 -c h1 -u -l 1024 -R -t 3 -b 1M
     ClusterCLI (net)
 
     for lte in lteList:
