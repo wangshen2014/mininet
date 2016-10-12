@@ -27,7 +27,7 @@ def main():
     wifi = WifiSegment()
 
     # About AP
-    ap0 = net.addAP('ap0')
+    ap0 = net.addSwitch('ap0')
     mininet.ns3.setMobilityModel(ap0, None)
     mininet.ns3.setPosition(ap0, 0, 0, 0)
     wifi.addAp(ap0, channelNumber=6, ssid="opennet_ap")
@@ -37,7 +37,7 @@ def main():
         print("I'm a AP")
 
     # About Station
-    sta0 = net.addStation('sta0')
+    sta0 = net.addHost('sta0')
     mininet.ns3.setMobilityModel(sta0, None)
     mininet.ns3.setPosition(sta0, 0, 0, 0)
     wifi.addSta(sta0, channelNumber=6, ssid="opennet_ap")

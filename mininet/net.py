@@ -245,34 +245,6 @@ class Mininet( object ):
         self.nameToNode[ name ] = sw
         return sw
 
-    def addAP( self, name, cls=None, **params ):
-        defaults = { 'listenPort': self.listenPort,
-                     'inNamespace': self.inNamespace }
-        defaults.update( params )
-        ap = AP( name, **defaults )
-        if not self.inNamespace and self.listenPort:
-            self.listenPort += 1
-        self.switches.append( ap )
-        self.nameToNode[ name ] = ap
-        return ap
-
-    def addStation( self, name, cls=None, **params ):
-        defaults = { 'ip': ipAdd( self.nextIP,
-                                  ipBaseNum=self.ipBaseNum,
-                                  prefixLen=self.prefixLen ) +
-                                  '/%s' % self.prefixLen }
-        if self.autoSetMacs:
-            defaults[ 'mac' ] = macColonHex( self.nextIP )
-        if self.autoPinCpus:
-            defaults[ 'cores' ] = self.nextCore
-            self.nextCore = ( self.nextCore + 1 ) % self.numCores
-        self.nextIP += 1
-        defaults.update( params )
-        sta = Station( name, **defaults )
-        self.hosts.append( sta )
-        self.nameToNode[ name ] = sta
-        return sta
-
     def addController( self, name='c0', controller=None, **params ):
         """Add controller.
            controller: Controller class"""
