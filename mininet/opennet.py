@@ -11,7 +11,6 @@ def checkDictionaryPath(path):
         os.makedirs(os.path.dirname(path))
     return path
 
-
 class Netanim( object ):
     def __init__(self, path="/tmp/xml/wifi-wired-bridged4.xml", nodes=None, packetmetadata=True):
         self.path = path
@@ -83,17 +82,4 @@ class Pcap( object ):
         ns.csma.CsmaHelper().EnablePcapAll(self.csma_pcap_path)
 
         return True
-
-"""
-getWifiNode will return the wifinode with specific name.
-"""
-
-def getWifiNode( wifinode, name):
-    for n in wifinode:
-        if n.name == name:
-            return n
-    return None
-
-def addCSMALink(node1, node2, datarate="100Mbps"):
-    CSMALink(node1, node2, datarate)
 
