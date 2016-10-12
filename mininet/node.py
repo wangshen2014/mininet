@@ -1530,9 +1530,3 @@ def DefaultController( name, controllers=DefaultControllers, **kwargs ):
 def NullController( *_args, **_kwargs ):
     "Nonexistent controller - simply returns None"
     return None
-
-class AP ( OVSSwitch ):
-    pass
-
-class Station ( Host ):
-    pass

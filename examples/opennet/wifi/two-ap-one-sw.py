@@ -39,19 +39,19 @@ def main():
 
     sw0 = net.addSwitch('sw0', ip=None)
 
-    ap0 = net.addAP('ap0', ip=None)
+    ap0 = net.addSwitch('ap0', ip=None)
     mininet.ns3.setMobilityModel(ap0, None)
     mininet.ns3.setPosition(ap0, 0, 0, 0)
 
-    ap1 = net.addAP('ap1', ip=None)
+    ap1 = net.addSwitch('ap1', ip=None)
     mininet.ns3.setMobilityModel(ap1, None)
     mininet.ns3.setPosition(ap1, 10, 10, 0)
 
-    sta0 = net.addStation('sta0', ip="10.0.0.1")
+    sta0 = net.addHost('sta0', ip="10.0.0.1")
     mininet.ns3.setMobilityModel(sta0, None)
     mininet.ns3.setVelocity(sta0, 0, 5, 0)
 
-    sta1 = net.addStation('sta1', ip="10.0.0.2")
+    sta1 = net.addHost('sta1', ip="10.0.0.2")
     mininet.ns3.setMobilityModel(sta1, None)
     mininet.ns3.setVelocity(sta1, 5, 0, 0)
 
