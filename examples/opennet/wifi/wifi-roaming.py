@@ -9,7 +9,7 @@ from mininet.node import Node, OVSSwitch, Host, RemoteController
 from mininet.link import Link, Intf
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info
-from mininet.ns3 import WifiSegment
+from mininet.ns3 import WIFISegment
 
 import mininet.ns3
 import ns.core
@@ -30,7 +30,7 @@ def WifiNet():
     net.addController( 'c0', controller=RemoteController, ip='127.0.0.1', port=6633 )
 
     """ Initialize WifiSegment """
-    wifi = WifiSegment(standard = ns.wifi.WIFI_PHY_STANDARD_80211g)
+    wifi = WIFISegment()
 
     """ Node names """
     hosts = ['h1', 'h2']
