@@ -472,7 +472,7 @@ class TBIntf( Intf ):
 
 # Network segment is a Mininet object consistng of ns-3 channel of a specific type. This can be seen as
 # an equivalent of collision domain. Many Mininet nodes can be connected to the one network segment.
-# During connecting, Mininet creates ns-3 device of particular type in the underlying  ns-3 node.
+# During connecting, Mininet creates ns-3 device of particular type in the underlying ns-3 node.
 # Then it connects this ns-3 device to the segment's ns-3 channel. Next, Mininet creates TBIntf in the
 # specified Mininet node and bridges this tap interface with the ns-3 device created formerly.
 
@@ -636,15 +636,19 @@ class CSMALink( CSMASegment, Link ):
 class WIFISegment( object ):
     """Equivalent of radio WiFi channel.
        Only Ap and WDS devices support SendFrom()."""
-    def __init__( self ):
+    def __init__( self, enableQos=False, channelNum=1):
         # Helpers instantiation.
         self.channelhelper = ns.wifi.YansWifiChannelHelper.Default()
         self.phyhelper = ns.wifi.YansWifiPhyHelper.Default()
         self.wifihelper = ns.wifi.WifiHelper.Default()
-        self.machelper = ns.wifi.NqosWifiMacHelper.Default()
+        self.wifihelper.SetStandard (ns.wifi.WIFI_PHY_STANDARD_80211g)
+        if enableQos:
+            self.machelper = ns.wifi.NqosWifiMacHelper.Default()
+        else:
+            self.machelper = ns.wifi.QosWifiMacHelper.Default()
         # Setting channel to phyhelper.
-        self.channel = self.channelhelper.Create()
-        self.phyhelper.SetChannel( self.channel )
+        self.phyhelper.Set ("ChannelNumber", ns.core.UintegerValue (channelNum))
+        self.phyhelper.SetChannel (self.channelhelper.Create())
 
     def add( self, node, port=None, intfName=None, mode=None ):
         """Connect Mininet node to the segment.
@@ -664,6 +668,7 @@ class WIFISegment( object ):
             allNodes.append( node )
         # Install new device to the ns-3 node, using provided helpers.
         device = self.wifihelper.Install( self.phyhelper, self.machelper, node.nsNode ).Get( 0 )
+        ### device.SetAddress (ns.network.Mac48Address.Allocate ())
         mobilityhelper = ns.mobility.MobilityHelper()
         # Install mobility object to the ns-3 node.
         mobilityhelper.Install( node.nsNode )
@@ -713,9 +718,9 @@ class WIFISegment( object ):
            intfName: node tap interface name (optional)
            mode: TapBridge mode (UseLocal or UseBridge) (optional)
            ssid: network SSID (optional)"""
-        self.machelper.SetType ("ns3::StaWifiMac", "Ssid", ns.wifi.SsidValue (ns.wifi.Ssid(ssid)))
+        self.machelper.SetType ("ns3::StaWifiMac", "Ssid", ns.wifi.SsidValue (ns.wifi.Ssid(ssid)),
+                                "ScanType", ns.core.EnumValue (ns.wifi.StaWifiMac.ACTIVE))
         return self.add( node, port, intfName, mode )
-
 
 class WIFIApStaLink( WIFISegment, Link ):
     """Link between two nodes using infrastructure WiFi channel."""
