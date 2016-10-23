@@ -51,6 +51,7 @@ syscall_wrapper.o: syscall_wrapper.c
 
 mnexec: mnexec.c $(MN) mininet/net.py syscall_wrapper.o
 	cc $(CFLAGS) $(LDFLAGS) syscall_wrapper.o -DVERSION=\"`PYTHONPATH=. $(MN) --version`\" $<  -o $@
+	rm syscall_wrapper.o
 
 install: $(MNEXEC) $(MANPAGES)
 	install $(MNEXEC) $(BINDIR)
