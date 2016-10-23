@@ -89,7 +89,7 @@ def WifiNet():
     for host in hosts:
         node = net.addHost(host, ip=ip[host])
         mininet.ns3.setMobilityModel(node, mobility_models.get(host))
-        wifi.addSta(node, channels.get(host), 'opennet')
+        wifi.addSta(node, channelNumber=channels.get(host), ssid='opennet')
         nodes[host] = node
 
     """ Initialize APs """
@@ -98,7 +98,7 @@ def WifiNet():
         mininet.ns3.setMobilityModel(node, None)
         pos_tuple = positions.get(switch)
         mininet.ns3.setPosition(node, pos_tuple[0], pos_tuple[1], pos_tuple[2])
-        wifi.addAp(node, channels.get(switch), 'opennet')
+        wifi.addAp(node, channelNumber=channels.get(switch), ssid='opennet')
         nodes[switch] = node
 
     """ Add links between APs """

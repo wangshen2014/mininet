@@ -24,15 +24,12 @@ if __name__ == '__main__':
     wifi.addSta( h1 )
     wifi.addSta( h2 )
 
-
-
     info( '*** Configuring hosts\n' )
     h0.setIP( '192.168.123.1/24' )
-    h1.setIP( '192.168.123.2/24')
-    h2.setIP( '192.168.123.3/24')
+    h1.setIP( '192.168.123.2/24' )
+    h2.setIP( '192.168.123.3/24' )
 
     mininet.ns3.start()
-
 
     info( '*** Network state:\n' )
     for node in h0, h1, h2:

@@ -20,7 +20,7 @@ from mininet.log import setLogLevel, info
 from mininet.cli import CLI
 
 import mininet.ns3
-from mininet.ns3 import WifiSegment
+from mininet.ns3 import WIFISegment
 
 import ns.core
 import ns.network
@@ -55,7 +55,7 @@ def main():
     mininet.ns3.setMobilityModel(sta1, None)
     mininet.ns3.setVelocity(sta1, 5, 0, 0)
 
-    wifi = WifiSegment(standard=ns.wifi.WIFI_PHY_STANDARD_80211g)
+    wifi = WIFISegment ()
     wifi.addAp(ap0, channelNumber=11, ssid="opennet_0")
     wifi.addAp(ap1, channelNumber=11, ssid="opennet_1")
 

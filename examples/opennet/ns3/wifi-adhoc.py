@@ -14,25 +14,22 @@ if __name__ == '__main__':
     net = Mininet()
 
     info( '*** Creating Network\n' )
-    h0 = net.addHost('h0')
-    h1 = net.addHost('h1')
-    h2 = net.addHost('h2')
+    h0 = net.addHost( 'h0' )
+    h1 = net.addHost( 'h1' )
+    h2 = net.addHost( 'h2' )
 
     wifi = WIFISegment()
 
-    wifi.add( h0 )
-    wifi.add( h1 )
-    wifi.add( h2 )
-
-
+    wifi.addAdhoc( h0 )
+    wifi.addAdhoc( h1 )
+    wifi.addAdhoc( h2 )
 
     info( '*** Configuring hosts\n' )
     h0.setIP( '192.168.123.1/24' )
-    h1.setIP( '192.168.123.2/24')
-    h2.setIP( '192.168.123.3/24')
+    h1.setIP( '192.168.123.2/24' )
+    h2.setIP( '192.168.123.3/24' )
 
     mininet.ns3.start()
-
 
     info( '*** Network state:\n' )
     for node in h0, h1, h2:

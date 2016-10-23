@@ -106,11 +106,7 @@ int main(int argc, char *argv[])
 #endif
 
     static struct sched_param sp;
-#ifdef VIRTUAL_TIME
     while ((c = getopt(argc, argv, "+cdn:pa:g:r:vh")) != -1)
-#else
-    while ((c = getopt(argc, argv, "+cdnpa:g:r:vh")) != -1)
-#endif
         switch(c) {
         case 'c':
             /* close file descriptors except stdin/out/error */
