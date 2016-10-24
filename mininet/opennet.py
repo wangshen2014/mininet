@@ -1,9 +1,17 @@
 #!/usr/bin/python
 
 import os
+import socket
+import fcntl
+import struct
 import ns.netanim
 import ns.csma
 import ns.wifi
+
+def getIntfAddr (intf):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    n = fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s', intf[:15]))[20:24]
+    return socket.inet_ntoa(n)
 
 def checkDictionaryPath(path):
     """ Check dictionary exist or not, if not create it """

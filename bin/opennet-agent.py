@@ -13,7 +13,15 @@ from datetime import datetime
 
 import mininet.node
 import mininet.link
-from mininet.lte import *
+
+from ns.lte import *
+from ns.core import *
+from ns.network import *
+from ns.internet import *
+from ns.mobility import *
+from ns.fd_net_device import *
+from ns.tap_bridge import *
+from ns.wifi import *
 
 class Daemon:
     """
@@ -156,7 +164,7 @@ class OpenNetAgent(Daemon):
         sys.stdout = open ('/tmp/opennet-agent.out', 'a')
         sys.stderr = open ('/tmp/opennet-agent.err', 'a')
         while True:
-            data = csock.recv (4096)
+            data = csock.recv (8192)
             print str (datetime.now ())
             print data
             if data == "exit":
