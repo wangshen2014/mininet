@@ -1,39 +1,40 @@
 # lte-example.py
 
 import sys
+from os import popen
 
 from subprocess import call
 
 from mininet.cluster.net import MininetCluster
 from mininet.cluster.cli import ClusterCLI
 from mininet.log import setLogLevel, info
-from mininet.util import quietRun
-
 from mininet.lte import *
+from mininet.opennet import getIntfAddr
 
 ENB = 2
 UE = 2
 TDF = 100
 CPU = 1
+IP = ''
 
 def emulation ():
 
     # Use MininetCluster for cluster emulation of hosts and switches
     servers = ['master']
     # Do not use 127.0.0.1
-    serverIP = {'master': '192.168.163.129'}
+    serverIP = {'master': IP}
     net = MininetCluster (controller=None, user='root', servers=servers, serverIP=serverIP)
     switches = [None]
 
     # Add OpenFlow Switches (OVS)
     info ("*** Add OFS\n")
-    switch = net.addSwitch ("ofs1", failMode='secure', user='root', server='master', serverIP='192.168.163.129')
+    switch = net.addSwitch ("ofs1", failMode='secure', user='root', server='master', serverIP=IP)
     switches.append (switch)
 
-    switch = net.addSwitch ("ofs2", failMode='secure', user='root', server='master', serverIP='192.168.163.129')
+    switch = net.addSwitch ("ofs2", failMode='secure', user='root', server='master', serverIP=IP)
     switches.append (switch)
 
-    switch = net.addSwitch ("ofs3", failMode='secure', user='root', server='master', serverIP='192.168.163.129')
+    switch = net.addSwitch ("ofs3", failMode='secure', user='root', server='master', serverIP=IP)
     switches.append (switch)
 
     info ("*** Add link between OFS\n")
@@ -60,7 +61,7 @@ def emulation ():
         # Reference mininet/lte.py for more detail of Lte class
         lte = Lte (nEnbs=ENB / CPU, nUesPerEnb=UE / ENB, tdf=TDF,
                    mode=MODE, epcSwitch=switches[1],
-                   server='master', serverIp='192.168.163.129',
+                   server='master', serverIp=IP,
                    logFile=LOG, imsiBase=c * (UE / CPU),
                    cellIdBase=c * (ENB / CPU), ueIpBase=UE_IP_BASE, slaveName=SLAVE_DEVICE)
 
@@ -74,8 +75,13 @@ def emulation ():
         for i in range (c * (UE / CPU) + 1, (c + 1) * (UE / CPU) + 1):
             info ('h{0} '.format (i))
             # UE is combination of Mininet host and NS-3 node
-            host = net.addHost ("h{0}".format (i), user='root', server='master', serverIP='192.168.163.129', tdf=TDF)
-            ueIP = lte.addUe (host)
+            host = net.addHost ("h{0}".format (i), user='root', server='master', serverIP=IP, tdf=TDF)
+            ueIP, ueIndex = lte.addUe (host)
+            # Add EpsBearer to UE
+            lte.addEpsBearer (ueIndex=ueIndex, localPortStart=3000, localPortEnd=3999, qci='EpsBearer.NGBR_IMS')
+            lte.addEpsBearer (ueIndex=ueIndex, remotePortStart=3000, remotePortEnd=3999, qci='EpsBearer.NGBR_IMS')
+            lte.addEpsBearer (ueIndex=ueIndex, localPortStart=4000, localPortEnd=4999, qci='EpsBearer.GBR_CONV_VOICE')
+            lte.addEpsBearer (ueIndex=ueIndex, remotePortStart=4000, remotePortEnd=4999, qci='EpsBearer.GBR_CONV_VOICE')
             # Record IP address for further usage (depends on scenario)
             ueIpList.append (ueIP)
             hosts.append (host)
@@ -117,12 +123,15 @@ def emulation ():
     net.stop ()
 
 if __name__ == '__main__':
-    # example: python lte-example.py 4 4 100 1
+    # example: python lte-example.py 2 2 100 1
 
-    ENB = int (sys.argv[1])
-    UE = int (sys.argv[2])
-    TDF = int (sys.argv[3])
-    CPU = int (sys.argv[4])
+    if len (sys.argv) == 5:
+        ENB = int (sys.argv[1])
+        UE = int (sys.argv[2])
+        TDF = int (sys.argv[3])
+        CPU = int (sys.argv[4])
+
+    IP = getIntfAddr ('eth0')
 
     setLogLevel ('info')
     emulation ()
