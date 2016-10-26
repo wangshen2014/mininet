@@ -69,8 +69,7 @@ def emulation ():
         SLAVE_DEVICE = 'slaveTap{0}'.format (c)
 
         # Reference mininet/lte.py for more detail of Lte class
-        lte = Lte (nEnbs=ENB / CPU, nUesPerEnb=UE / ENB, tdf=TDF,
-                   mode=MODE, epcSwitch=switches[1], agentIp=IP, logFile=LOG,
+        lte = Lte (tdf=TDF, mode=MODE, epcSwitch=switches[1], agentIp=IP, logFile=LOG,
                    imsiBase=c * (UE / CPU), cellIdBase=c * (ENB / CPU), ueIpBase=UE_IP_BASE, slaveName=SLAVE_DEVICE)
         # For multiple hosts: agentIp="192.168.0.2"
 

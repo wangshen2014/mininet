@@ -20,7 +20,6 @@ class WIFI (object):
         self.csock.sendall ('GlobalValue.Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"))\n')
         self.csock.sendall ('GlobalValue.Bind ("ChecksumEnabled", BooleanValue (True))\n')
 
-	    # Helpers instantiation.
         self.csock.sendall ('wifihelper = WifiHelper.Default()\n')
         self.csock.sendall ('wifihelper.SetStandard (WIFI_PHY_STANDARD_80211g)\n')
         self.csock.sendall ('phyhelper = YansWifiPhyHelper.Default()\n')

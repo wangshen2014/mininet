@@ -9,8 +9,7 @@ from mininet.util import moveIntf
 from mininet.cluster.link import RemoteLink
 
 class Lte (object):
-    def __init__ (self, nEnbs=2, nUesPerEnb=1, tdf=1,
-                  mode='Master', imsiBase=0, cellIdBase=0,
+    def __init__ (self, tdf=1, mode='Master', imsiBase=0, cellIdBase=0,
                   ueIpBase='7.0.0.1', ueGwIpAddr='7.0.0.1',
                   pgwIpBase='1.0.0.0', pgwMask='255.0.0.0',
                   epcSwitch=None, agentIp=None, agentPort=53724, logFile=None,
@@ -74,8 +73,6 @@ class Lte (object):
         if logFile != None:
             self.csock.sendall ('Config.SetDefault ("ns3::TapEpcHelper::LogFile", StringValue ("{0}"))\n'.format (logFile))
 
-        self.csock.sendall ('nEnbs = {0}\n'.format (nEnbs))
-        self.csock.sendall ('nUesPerEnb = {0}\n'.format (nUesPerEnb))
         self.csock.sendall ('attachDelay = 10.0\n')
 
         self.csock.sendall ('lteHelper = LteHelper ()\n')
