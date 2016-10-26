@@ -11,7 +11,7 @@ from mininet.log import setLogLevel, info
 from mininet.wifi import *
 from mininet.opennet import *
 
-AP = 2
+AP = 1
 STA = 2
 ADHOC = 2
 CPU = 1
@@ -32,7 +32,7 @@ def emulation ():
     wifiList = []
 
     stationIP = {"h1": "10.0.0.1", "h2": "10.0.0.2"}
-    adhocIP = {"adhoc1": "10.0.1.1", "adhoc2": "10.0.1.2"}
+    adhocIP = {"adhoc1": "10.0.1.1", "adhoc2": "10.0.1.2", "adhoc3": "10.0.1.3"}
 
     # Create one WIFI object for each available CPU
     for c in range (0, CPU):
@@ -63,9 +63,10 @@ def emulation ():
         for i in range (c * (ADHOC / CPU) + 1, (c + 1) * (ADHOC / CPU) + 1):
             name = "adhoc{0}".format (i)
             info (name + " ")
-            # Station is combination of Mininet host and NS-3 node
             host = net.addHost (name, ip=adhocIP[name], user='root', server='master', serverIP=IP)
             wifi.addAdhoc (host)
+            # For mobility
+            # wifi.addAdhoc (host, mobilityType="ns3::ConstantVelocityMobilityModel", velocity=[0,0,0], position=[0,0,0])
         info ('\n')
 
         wifiList.append (wifi)
