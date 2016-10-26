@@ -8,12 +8,12 @@ from mininet.util import moveIntf
 from mininet.cluster.link import RemoteLink
 
 class WIFI (object):
-    def __init__ (self, enableQos=True, rootSwitch=None, serverIp=None, port=53724):
+    def __init__ (self, enableQos=True, rootSwitch=None, agentIP=None, agentPort=53724):
         self.rootSwitch = rootSwitch
         self.startAgent ()
         self.csock = None
         while self.csock == None:
-            self.csock = self.connectAgent (serverIp, port)
+            self.csock = self.connectAgent (agentIP, agentPort)
 
         self.tapBridgeIntfs = []
 
