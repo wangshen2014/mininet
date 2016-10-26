@@ -87,10 +87,18 @@ class WIFI (object):
         self.csock.close ()
         self.stopAgent ()
 
-    def addAdhoc (self, node):
+    def addAdhoc (self, node, mobilityType="ns3::ConstantPositionMobilityModel", position=None, velocity=None):
         self.csock.sendall ('machelper.SetType ("ns3::AdhocWifiMac")\n')
+
         self.csock.sendall ('nsNode = Node ()\n')
+        self.csock.sendall ('mobilityhelper.SetMobilityModel ("{0}")\n'.format (mobilityType))
         self.csock.sendall ('mobilityhelper.Install (nsNode)\n')
+        if position != None:
+            self.csock.sendall ('mm = nsNode.GetObject(MobilityModel.GetTypeId())\n')
+            self.csock.sendall ('mm.SetPosition(Vector({0}, {1}, {2}))\n'.format (position[0], position[1], position[2]))
+        if velocity != None and mobilityType == "ns3::ConstantVelocityMobilityModel":
+            self.csock.sendall ('mm = nsNode.GetObject(MobilityModel.GetTypeId())\n')
+            self.csock.sendall ('mm.SetVelocity(Vector({0}, {1}, {2}))\n'.format (velocity[0], velocity[1], velocity[2]))
         self.csock.sendall ('wifiDev = wifihelper.Install (phyhelper, machelper, nsNode).Get(0)\n')
 
         port = node.newPort ()
@@ -99,12 +107,19 @@ class WIFI (object):
         tbIntf = self.TapBridgeIntf (intfName, node, port, self.rootSwitch, self.csock)
         self.tapBridgeIntfs.append (tbIntf)
 
-    def addAP (self, node, channelNumber=1, ssid="default-ssid"):
+    def addAP (self, node, channelNumber=1, ssid="default-ssid", mobilityType="ns3::ConstantPositionMobilityModel", position=None, velocity=None):
         self.csock.sendall ('machelper.SetType ("ns3::ApWifiMac", "Ssid", SsidValue (Ssid("{0}")), "BeaconGeneration", BooleanValue(True), "BeaconInterval", TimeValue(Seconds(2.5)))\n'.format (ssid))
         self.csock.sendall ('phyhelper.Set ("ChannelNumber", UintegerValue ({0}))\n'.format (channelNumber))
 
         self.csock.sendall ('nsNode = Node ()\n')
+        self.csock.sendall ('mobilityhelper.SetMobilityModel ("{0}")\n'.format (mobilityType))
         self.csock.sendall ('mobilityhelper.Install (nsNode)\n')
+        if position != None:
+            self.csock.sendall ('mm = nsNode.GetObject(MobilityModel.GetTypeId())\n')
+            self.csock.sendall ('mm.SetPosition(Vector({0}, {1}, {2}))\n'.format (position[0], position[1], position[2]))
+        if velocity != None and mobilityType == "ns3::ConstantVelocityMobilityModel":
+            self.csock.sendall ('mm = nsNode.GetObject(MobilityModel.GetTypeId())\n')
+            self.csock.sendall ('mm.SetVelocity(Vector({0}, {1}, {2}))\n'.format (velocity[0], velocity[1], velocity[2]))
         self.csock.sendall ('wifiDev = wifihelper.Install (phyhelper, machelper, nsNode).Get(0)\n')
 
         port = node.newPort ()
@@ -113,12 +128,19 @@ class WIFI (object):
         tbIntf = self.TapBridgeIntf (intfName, node, port, self.rootSwitch, self.csock)
         self.tapBridgeIntfs.append (tbIntf)
 
-    def addSta (self, node, channelNumber=1, ssid="default-ssid"):
+    def addSta (self, node, channelNumber=1, ssid="default-ssid", mobilityType="ns3::ConstantPositionMobilityModel", position=None, velocity=None):
         self.csock.sendall ('machelper.SetType ("ns3::StaWifiMac", "Ssid", SsidValue (Ssid("{0}")), "ScanType", EnumValue (StaWifiMac.ACTIVE))\n'.format (ssid))
         self.csock.sendall ('phyhelper.Set ("ChannelNumber", UintegerValue ({0}))\n'.format (channelNumber))
 
         self.csock.sendall ('nsNode = Node ()\n')
+        self.csock.sendall ('mobilityhelper.SetMobilityModel ("{0}")\n'.format (mobilityType))
         self.csock.sendall ('mobilityhelper.Install (nsNode)\n')
+        if position != None:
+            self.csock.sendall ('mm = nsNode.GetObject(MobilityModel.GetTypeId())\n')
+            self.csock.sendall ('mm.SetPosition(Vector({0}, {1}, {2}))\n'.format (position[0], position[1], position[2]))
+        if velocity != None and mobilityType == "ns3::ConstantVelocityMobilityModel":
+            self.csock.sendall ('mm = nsNode.GetObject(MobilityModel.GetTypeId())\n')
+            self.csock.sendall ('mm.SetVelocity(Vector({0}, {1}, {2}))\n'.format (velocity[0], velocity[1], velocity[2]))
         self.csock.sendall ('wifiDev = wifihelper.Install (phyhelper, machelper, nsNode).Get(0)\n')
 
         port = node.newPort ()
