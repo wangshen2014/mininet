@@ -9,26 +9,21 @@ from mininet.util import moveIntf
 from mininet.cluster.link import RemoteLink
 
 class Lte (object):
-    def __init__ (self, nEnbs=2, nUesPerEnb=1, distance=1000.0, tdf=1,
+    def __init__ (self, nEnbs=2, nUesPerEnb=1, tdf=1,
                   mode='Master', imsiBase=0, cellIdBase=0,
                   ueIpBase='7.0.0.1', ueGwIpAddr='7.0.0.1',
                   pgwIpBase='1.0.0.0', pgwMask='255.0.0.0',
-                  epcSwitch=None, server=None, serverIp=None, port=53724, logFile=None,
+                  epcSwitch=None, agentIp=None, agentPort=53724, logFile=None,
                   homeEnbTxPower=30.0, slaveName='slaveTap'):
 
         if epcSwitch == None:
             info ('*** error: epcSwitch is a required argument.\n')
             return
-        elif server == None:
-            info ('*** error: server is a required argument.\n')
-            return
-        elif serverIp == None:
-            info ('*** error: serverIp is a required argument.\n')
+        elif agentIp == None:
+            info ('*** error: agentIp is a required argument.\n')
             return
 
         self.epcSwitch = epcSwitch
-        self.server = server
-        self.serverIp = serverIp
         self.ueIpBase = ueIpBase
         self.ueGwIpAddr = ueGwIpAddr
         self.tapBridgeIntfs = []
@@ -37,7 +32,7 @@ class Lte (object):
         self.startAgent ()
         self.csock = None
         while self.csock == None:
-            self.csock = self.connectAgent (serverIp, port)
+            self.csock = self.connectAgent (agentIp, agentPort)
 
         if mode == 'Master':
             self.addEpcEntity (self.epcSwitch, 'pgwTap')
@@ -73,9 +68,6 @@ class Lte (object):
         self.csock.sendall ('Config.SetDefault ("ns3::LteHelper::Scheduler", StringValue ("ns3::FdMtFfMacScheduler"))\n')
         self.csock.sendall ('Config.SetDefault ("ns3::TapEpcHelper::Mode", StringValue ("{0}"))\n'.format (mode))
         self.csock.sendall ('Config.SetDefault ("ns3::LteEnbPhy::TxPower", DoubleValue ({0}))\n'.format (homeEnbTxPower))
-        self.csock.sendall ('Config.SetDefault ("ns3::LteEnbRrc::DefaultTransmissionMode", UintegerValue (2))\n')
-        # self.csock.sendall ('Config.SetDefault ("ns3::LteEnbNetDevice::UlBandwidth", UintegerValue ({0}))\n'.format (100))
-        # self.csock.sendall ('Config.SetDefault ("ns3::LteEnbNetDevice::DlBandwidth", UintegerValue ({0}))\n'.format (100))
 
         self.csock.sendall ('LteTimeDilationFactor.SetTimeDilationFactor ({0})\n'.format (tdf))
         
@@ -85,7 +77,6 @@ class Lte (object):
         self.csock.sendall ('nEnbs = {0}\n'.format (nEnbs))
         self.csock.sendall ('nUesPerEnb = {0}\n'.format (nUesPerEnb))
         self.csock.sendall ('attachDelay = 10.0\n')
-        self.csock.sendall ('distance = {0}\n'.format (distance))
 
         self.csock.sendall ('lteHelper = LteHelper ()\n')
         self.csock.sendall ('lteHelper.SetImsiCounter ({0})\n'.format (imsiBase))
@@ -107,19 +98,7 @@ class Lte (object):
             self.csock.sendall ('ipv4Helper.SetBase (Ipv4Address ("{0}"), Ipv4Mask ("{1}"))\n'.format (pgwIpBase, pgwMask))
             self.csock.sendall ('pgwIpIfaces = ipv4Helper.Assign (pgwDevice)\n')
 
-            # cmd = 'ipv4 = pgw.GetObject (Ipv4.GetTypeId ())\n'
-            # self.csock.sendall (cmd)
-            # cmd = 'ipv4Static = Ipv4StaticRoutingHelper ().GetStaticRouting (ipv4)\n'
-            # self.csock.sendall (cmd)
-            # cmd = 'ipv4Static.SetDefaultRoute (Ipv4Address ("{0}"), 3)\n'.format ("1.0.0.1")
-            # self.csock.sendall (cmd)
-
-        self.csock.sendall ('positionAlloc = ListPositionAllocator ()\n')
-        self.csock.sendall ('for i in range (0, nEnbs):\n    positionAlloc.Add (Vector (distance * i, 0, 0))\n')
-
         self.csock.sendall ('mobility = MobilityHelper ()\n')
-        self.csock.sendall ('mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel")\n')
-        self.csock.sendall ('mobility.SetPositionAllocator (positionAlloc)\n')
 
         self.csock.sendall ('enbLteDevs = NetDeviceContainer ()\n')
         self.csock.sendall ('ueLteDevs = NetDeviceContainer ()\n')
@@ -158,23 +137,41 @@ class Lte (object):
         port = node.newPort ()
         self.TapIntf (intfName, node, port)
 
-    def addEnb (self, node, intfName):
+    def addEnb (self, node, intfName, mobilityType="ns3::ConstantPositionMobilityModel", position=None, velocity=None):
         port = node.newPort ()
         self.TapIntf (intfName, node, port)
 
         self.csock.sendall ('nsNode = Node ()\n')
+
+        self.csock.sendall ('mobility.SetMobilityModel ("{0}")\n'.format (mobilityType))
         self.csock.sendall ('mobility.Install (nsNode)\n')
+        if position != None:
+            self.csock.sendall ('mm = nsNode.GetObject(MobilityModel.GetTypeId())\n')
+            self.csock.sendall ('mm.SetPosition(Vector({0}, {1}, {2}))\n'.format (position[0], position[1], position[2]))
+        if velocity != None and mobilityType == "ns3::ConstantVelocityMobilityModel":
+            self.csock.sendall ('mm = nsNode.GetObject(MobilityModel.GetTypeId())\n')
+            self.csock.sendall ('mm.SetVelocity(Vector({0}, {1}, {2}))\n'.format (velocity[0], velocity[1], velocity[2]))
+
         self.csock.sendall ('enbLteDev = lteHelper.InstallEnbDevice (NodeContainer (nsNode))\n')
         self.csock.sendall ('enbLteDevs.Add (enbLteDev)\n')
 
-    def addUe (self, node):
+    def addUe (self, node, mobilityType="ns3::ConstantPositionMobilityModel", position=None, velocity=None):
         self.ueIndex += 1
         node.cmd ('sysctl -w net.ipv6.conf.all.disable_ipv6=1')
         port = node.newPort ()
         intfName = "{0}-eth{1}".format (node.name, port)
 
         self.csock.sendall ('nsNode = Node ()\n')
+
+        self.csock.sendall ('mobility.SetMobilityModel ("{0}")\n'.format (mobilityType))
         self.csock.sendall ('mobility.Install (nsNode)\n')
+        if position != None:
+            self.csock.sendall ('mm = nsNode.GetObject(MobilityModel.GetTypeId())\n')
+            self.csock.sendall ('mm.SetPosition(Vector({0}, {1}, {2}))\n'.format (position[0], position[1], position[2]))
+        if velocity != None and mobilityType == "ns3::ConstantVelocityMobilityModel":
+            self.csock.sendall ('mm = nsNode.GetObject(MobilityModel.GetTypeId())\n')
+            self.csock.sendall ('mm.SetVelocity(Vector({0}, {1}, {2}))\n'.format (velocity[0], velocity[1], velocity[2]))
+
         self.csock.sendall ('ueLteDev = lteHelper.InstallUeDevice (NodeContainer (nsNode))\n')
         self.csock.sendall ('ueLteDevs.Add (ueLteDev)\n')
 

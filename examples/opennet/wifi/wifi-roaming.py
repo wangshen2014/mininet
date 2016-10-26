@@ -26,10 +26,12 @@ def WifiNet():
 
     net = Mininet()
 
-    info( '*** Adding controller\n' )
-    net.addController( 'c0', controller=RemoteController, ip='127.0.0.1', port=6633 )
+    """ Uncomment following lines to add controller """
+    # info( '*** Adding controller\n' )
+    # net.addController( 'c0', controller=RemoteController, ip='127.0.0.1', port=6633 )
 
-    """ Initialize WifiSegment """
+    """ Initialize WifiSegment
+        Reference mininet/ns3.py for more detail of WIFISegment class """
     wifi = WIFISegment()
 
     """ Node names """
@@ -94,7 +96,7 @@ def WifiNet():
 
     """ Initialize APs """
     for switch in switches:
-        node = net.addSwitch(switch, ip=None)
+        node = net.addSwitch(switch, ip=None, failMode='standalone')
         mininet.ns3.setMobilityModel(node, None)
         pos_tuple = positions.get(switch)
         mininet.ns3.setPosition(node, pos_tuple[0], pos_tuple[1], pos_tuple[2])

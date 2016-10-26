@@ -32,14 +32,14 @@ def emulation ():
 
     # Add OpenFlow Switches (OVS)
     info ("*** Add OFS\n")
-    switch = net.addSwitch ("ofs1", failMode='standalone', user='root', server='master', serverIP=IP)
+    switch = net.addSwitch ("ofs1", failMode='secure', user='root', server='master', serverIP=IP)
     switches.append (switch)
 
-    switch = net.addSwitch ("ofs2", failMode='standalone', user='root', server='master', serverIP=IP)
+    switch = net.addSwitch ("ofs2", failMode='secure', user='root', server='master', serverIP=IP)
     switches.append (switch)
 
     # For multiple hosts:
-    # switch = net.addSwitch ("ofs3", failMode='standalone', user='root', server='slave', serverIP="192.168.0.2")
+    # switch = net.addSwitch ("ofs3", failMode='secure', user='root', server='slave', serverIP="192.168.0.2")
     # switches.append (switch)
 
     info ("*** Add link between OFS\n")
@@ -110,6 +110,17 @@ def emulation ():
 
     info ('*** net.start ()\n')
     net.start ()
+
+    # Setup DSCP matching flows in OFS1 and OFS2
+    switches[1].cmd ("ovs-ofctl add-flow ofs1 priority=0,actions=NORMAL")
+    switches[1].cmd ("ovs-ofctl add-flow ofs1 priority=1,ip_dscp=0x00,udp,udp_src=2152,udp_dst=2152,actions=NORMAL")
+    switches[1].cmd ("ovs-ofctl add-flow ofs1 priority=2,ip_dscp=0x1a,udp,udp_src=2152,udp_dst=2152,actions=NORMAL")
+    switches[1].cmd ("ovs-ofctl add-flow ofs1 priority=3,ip_dscp=0x2e,udp,udp_src=2152,udp_dst=2152,actions=NORMAL")
+
+    switches[2].cmd ("ovs-ofctl add-flow ofs2 priority=0,actions=NORMAL")
+    switches[2].cmd ("ovs-ofctl add-flow ofs2 priority=1,ip_dscp=0x00,udp,udp_src=2152,udp_dst=2152,actions=NORMAL")
+    switches[2].cmd ("ovs-ofctl add-flow ofs2 priority=2,ip_dscp=0x1a,udp,udp_src=2152,udp_dst=2152,actions=NORMAL")
+    switches[2].cmd ("ovs-ofctl add-flow ofs2 priority=3,ip_dscp=0x2e,udp,udp_src=2152,udp_dst=2152,actions=NORMAL")
 
     info ('*** lte.start ()\n')
     for lte in lteList:
