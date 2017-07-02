@@ -43,11 +43,11 @@ if __name__ == '__main__':
 
 
 
-    tb0 = TBIntf(name="tap0", node=h0, port=None, nsNode=h0ns, nsDevice=device0)
+    tb0 = TBIntf(name="Tap0", node=h0, port=None, nsNode=h0ns, nsDevice=device0)
 
-    tb1 = TBIntf("tap1", h1, nsNode=h1ns, nsDevice=device1)
+    tb1 = TBIntf("Tap1", h1, nsNode=h1ns, nsDevice=device1)
 
-    tb2 = TBIntf("tap2", h2)
+    tb2 = TBIntf("Tap2", h2)
     tb2.nsNode = h2ns
     tb2.nsDevice = device2
 
