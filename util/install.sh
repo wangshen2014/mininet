@@ -85,6 +85,27 @@ function version_ge {
     [ "$1" == "$latest" ]
 }
 
+# Attempt to detect Python version
+PYTHON=${PYTHON:-python}
+PRINTVERSION='import sys; print(sys.version_info)'
+PYTHON_VERSION=unknown
+for python in $PYTHON python2 python3; do
+    if $python -c "$PRINTVERSION" |& grep 'major=2'; then
+        PYTHON=$python; PYTHON_VERSION=2; PYPKG=python
+        break
+    elif $python -c "$PRINTVERSION" |& grep 'major=3'; then
+        PYTHON=$python; PYTHON_VERSION=3; PYPKG=python3
+        break
+    fi
+done
+if [ "$PYTHON_VERSION" == unknown ]; then
+    echo "Can't find a working python command ('$PYTHON' doesn't work.)"
+    echo "You may wish to export PYTHON or install a working 'python'."
+    exit 1
+fi
+
+echo "Detected Python (${PYTHON}) version ${PYTHON_VERSION}"
+
 
 # Kernel Deb pkg to be removed:
 KERNEL_IMAGE_OLD=linux-image-2.6.26-33-generic
@@ -159,7 +180,8 @@ function of {
     else
         $install git-core autotools-dev pkg-config libc6-dev
     fi
-    git clone git://openflowswitch.org/openflow.git
+    #git clone https://openflowswitch.org/openflow.git
+    git clone https://github.com/mininet/openflow
     cd $BUILD_DIR/openflow
 
     # Patch controller to handle more than 16 switches
@@ -315,39 +337,56 @@ function ubuntuOvs {
 function ovs {
     echo "Installing Open vSwitch..."
 
-    if [ "$DIST" == "Fedora" ]; then
-        $install openvswitch openvswitch-controller
+    if [ "$DIST" = "Fedora" -o "$DIST" = "RedHatEnterpriseServer" ]; then
+        $install openvswitch
+        if ! $install openvswitch-controller; then
+            echo "openvswitch-controller not installed"
+        fi
         return
     fi
 
-    # Manually installing openvswitch-datapath may be necessary
-    # for manually built kernel .debs using Debian's defective kernel
-    # packaging, which doesn't yield usable headers.
-    if ! dpkg --get-selections | grep openvswitch-datapath; then
-        # If you've already installed a datapath, assume you
-        # know what you're doing and don't need dkms datapath.
-        # Otherwise, install it.
-        $install openvswitch-datapath-dkms
+    if [ "$DIST" = "Ubuntu" ] && ! version_ge $RELEASE 14.04; then
+        # Older Ubuntu versions need openvswitch-datapath/-dkms
+        # Manually installing openvswitch-datapath may be necessary
+        # for manually built kernel .debs using Debian's defective kernel
+        # packaging, which doesn't yield usable headers.
+        if ! dpkg --get-selections | grep openvswitch-datapath; then
+            # If you've already installed a datapath, assume you
+            # know what you're doing and don't need dkms datapath.
+            # Otherwise, install it.
+            $install openvswitch-datapath-dkms
+        fi
     fi
 
     $install openvswitch-switch
+    OVSC=""
     if $install openvswitch-controller; then
+        OVSC="openvswitch-controller"
+    else
+        echo "Attempting to install openvswitch-testcontroller"
+        if $install openvswitch-testcontroller; then
+            OVSC="openvswitch-testcontroller"
+        else
+            echo "Failed - skipping openvswitch-testcontroller"
+        fi
+    fi
+    if [ "$OVSC" ]; then
         # Switch can run on its own, but
         # Mininet should control the controller
         # This appears to only be an issue on Ubuntu/Debian
-        if sudo service openvswitch-controller stop; then
+        if sudo service $OVSC stop 2>/dev/null; then
             echo "Stopped running controller"
         fi
-        if [ -e /etc/init.d/openvswitch-controller ]; then
-            sudo update-rc.d openvswitch-controller disable
-        fi
-    else
-        echo "Attempting to install openvswitch-testcontroller"
-        if ! $install openvswitch-testcontroller; then
-            echo "Failed - giving up"
+        if [ -e /etc/init.d/$OVSC ]; then
+            sudo update-rc.d $OVSC disable
         fi
     fi
-
+    # This service seems to hang on 20.04
+    if systemctl list-units | \
+            grep status netplan-ovs-cleanup.service>&/dev/null; then
+        echo 'TimeoutSec=10' | sudo EDITOR='tee -a' \
+        sudo systemctl edit --full netplan-ovs-cleanup.service
+    fi
 }
 
 function remove_ovs {
@@ -393,27 +432,20 @@ function ryu {
 
     # install Ryu dependencies"
     $install autoconf automake g++ libtool python make
-    if [ "$DIST" = "Ubuntu" ]; then
-        $install libxml2 libxslt-dev python-pip python-dev
-        sudo pip install gevent
-    elif [ "$DIST" = "Debian" ]; then
-        $install libxml2 libxslt-dev python-pip python-dev
-        sudo pip install gevent
+    if [ "$DIST" = "Ubuntu" -o "$DIST" = "Debian" ]; then
+        $install gcc ${PYPKG}-pip ${PYPKG}-dev libffi-dev libssl-dev \
+            libxml2-dev libxslt1-dev zlib1g-dev
     fi
 
-    # if needed, update python-six
-    SIX_VER=`pip show six | grep Version | awk '{print $2}'`
-    if version_ge 1.7.0 $SIX_VER; then
-        echo "Installing python-six version 1.7.0..."
-        sudo pip install -I six==1.7.0
-    fi
     # fetch RYU
     cd $BUILD_DIR/
-    git clone git://github.com/osrg/ryu.git ryu
+    git clone https://github.com/osrg/ryu.git ryu
     cd ryu
 
     # install ryu
-    sudo python ./setup.py install
+    sudo pip install -r tools/pip-requires -r tools/optional-requires \
+        -r tools/test-requires
+    sudo python setup.py install
 
     # Add symbolic link to /usr/bin
     sudo ln -s ./bin/ryu-manager /usr/local/bin/ryu-manager
@@ -513,28 +545,34 @@ function oftest {
     echo "Installing oftest..."
 
     # Install deps:
-    $install tcpdump python-scapy
+    $install tcpdump
+    $install ${PYPKG}-scapy || sudo $PYTHON -m pip install scapy
 
     # Install oftest:
     cd $BUILD_DIR/
-    git clone git://github.com/floodlight/oftest
+    git clone https://github.com/floodlight/oftest
 }
 
 # Install cbench
 function cbench {
     echo "Installing cbench..."
 
-    if [ "$DIST" = "Fedora" ]; then
+    if [ "$DIST" = "Fedora" -o "$DIST" = "RedHatEnterpriseServer" ]; then
         $install net-snmp-devel libpcap-devel libconfig-devel
+	elif [ "$DIST" = "SUSE LINUX"  ]; then
+		$install net-snmp-devel libpcap-devel libconfig-devel
     else
         $install libsnmp-dev libpcap-dev libconfig-dev
     fi
     cd $BUILD_DIR/
-    git clone git://gitosis.stanford.edu/oflops.git
+    # was:  git clone git://gitosis.stanford.edu/oflops.git
+    # Use our own fork on github for now:
+    git clone https://github.com/mininet/oflops
     cd oflops
     sh boot.sh || true # possible error in autoreconf, so run twice
     sh boot.sh
     ./configure --with-openflow-src-dir=$BUILD_DIR/openflow
+    make liboflops_test.la
     make
     sudo make install || true # make install fails; force past this
 }
